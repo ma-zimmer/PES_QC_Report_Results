@@ -18,6 +18,10 @@ SOURCE_OUT_DIR = os.path.join(SITE_DIR, '..', 'EnergyScope-Quebec', 'projects', 
 # Add each new SX_results folder name here as it gets generated.
 SCENARIOS = [
     'S0_results',
+    'S1_results',
+    'S2_results',
+    'S3_results',
+    'S4_results',
 ]
 
 

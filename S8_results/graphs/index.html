@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>S8_results</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --line: #e5e7eb;
+    --ink: #1b1f27; --ink2: #6b7280; --ink3: #9aa1ab;
+    --accent: #2563eb; --accent-soft: #eef3fe;
+    --side-bg: #152238; --side-line: #24344f; --side-ink: #c7d2e5;
+    --side-ink2: #8fa3c4; --side-ink3: #64779b; --side-accent: #7db1ff;
+  }
+  body { display: flex; height: 100vh; background: var(--bg); color: var(--ink);
+         font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif; }
+  #sidebar { width: 248px; min-width: 200px; background: var(--side-bg);
+             display: flex; flex-direction: column; flex-shrink: 0; }
+  #sidebar header { padding: 16px 16px 12px; border-bottom: 1px solid var(--side-line); }
+  .brand { font-size: 13px; font-weight: 700; letter-spacing: .02em; color: #ffffff; }
+  .case  { font-size: 11.5px; color: var(--side-ink2); margin-top: 3px; word-break: break-all; }
+  #casesel { width: 100%; margin-top: 5px; background: #0f1a2e; color: var(--side-ink);
+             border: 1px solid var(--side-line); border-radius: 6px; font-size: 11.5px;
+             padding: 3px 6px; font-family: inherit; cursor: pointer; }
+  #casesel:hover { border-color: var(--side-accent); }
+  #casesel:disabled { background: transparent; border-color: transparent; appearance: none;
+                      padding-left: 0; cursor: default; color: var(--side-ink2); opacity: 1; }
+  #nav { overflow-y: auto; padding: 6px 8px 20px; flex: 1; scrollbar-width: thin;
+         scrollbar-color: #33456622 transparent; }
+  #nav::-webkit-scrollbar { width: 8px; }
+  #nav::-webkit-scrollbar-thumb { background: #334566; border-radius: 4px; }
+  .sec { font-size: 12px; font-weight: 700; text-transform: uppercase;
+         letter-spacing: .09em; color: #a9bedf; padding: 14px 8px 6px;
+         border-top: 1px solid #3a4f78; margin-top: 26px; }
+  .sec:first-child { border-top: 0; margin-top: 4px; }
+  .item { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left;
+          border: 0; background: none;
+          padding: 6px 9px; border-radius: 6px; font-size: 13px; color: var(--side-ink);
+          cursor: pointer; font-family: inherit; }
+  .itemlabel { flex: 1; min-width: 0; }
+  .item .pin { opacity: 0; flex-shrink: 0; font-size: 12px; }
+  .item:hover .pin { opacity: .6; }
+  .item .pin:hover { opacity: 1; color: #ffd75e; }
+  .item.pinned .pin { opacity: .9; color: #ffd75e; }
+  .item:hover { background: rgba(255,255,255,.06); color: #ffffff; }
+  .item.active { background: rgba(125,177,255,.16); color: var(--side-accent); font-weight: 600; }
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #topbar { background: var(--side-bg); border-bottom: 1px solid var(--side-line);
+            padding: 12px 18px; }
+  #titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  #charttitle { font-size: 15px; font-weight: 600; color: #ffffff; }
+  #charttitle small { font-weight: 400; color: var(--side-ink2); }
+  #openraw { font-size: 12px; color: var(--side-accent); text-decoration: none; white-space: nowrap; }
+  #openraw:hover { text-decoration: underline; }
+  .chiprow { display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .dimname { font-size: 10.5px; font-weight: 600; color: var(--side-ink3);
+             text-transform: uppercase; letter-spacing: .06em; min-width: 62px; }
+  .chip { border: 1px solid var(--side-line); background: transparent; border-radius: 999px;
+          padding: 3px 11px; font-size: 12.5px; color: var(--side-ink); cursor: pointer;
+          font-family: inherit; }
+  .chip:hover { border-color: var(--side-accent); color: var(--side-accent); }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip.miss { color: #4d6188; border-style: dashed; }
+  .step { border: 1px solid var(--side-line); background: transparent; border-radius: 6px;
+          padding: 2px 8px; font-size: 12px; color: var(--side-ink2); cursor: pointer;
+          font-family: inherit; }
+  .step:hover { border-color: var(--side-accent); color: var(--side-accent); }
+  .step.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  #tools { display: flex; align-items: center; gap: 12px; }
+  #cmpsel { background: #0f1a2e; color: var(--side-ink); border: 1px solid var(--side-line);
+            border-radius: 6px; font-size: 12px; padding: 3px 6px; font-family: inherit;
+            max-width: 240px; }
+  #cmptools { display: none; align-items: center; gap: 4px; }
+  #cmptools button { border: 1px solid var(--side-line); background: transparent;
+               border-radius: 6px; padding: 3px 9px; font-size: 12px; color: var(--side-ink2);
+               cursor: pointer; font-family: inherit; white-space: nowrap; }
+  #cmptools button:hover { border-color: var(--side-accent); color: var(--side-accent); }
+  #cmptools button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  #navsearch { margin: 10px 8px 0; padding: 5px 9px; width: calc(100% - 16px);
+               background: #0f1a2e; border: 1px solid var(--side-line); border-radius: 6px;
+               color: var(--side-ink); font-size: 12.5px; font-family: inherit; }
+  #navsearch::placeholder { color: var(--side-ink3); }
+  #navsearch:focus { outline: none; border-color: var(--side-accent); }
+  #frames { flex: 1; display: flex; min-height: 0; }
+  #frames.stacked { flex-direction: column; }
+  .pane { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .pane iframe { flex: 1; border: 0; width: 100%; background: #fff; }
+  .panelabel { display: none; background: #0f1a2e; color: var(--side-ink2); font-size: 11px;
+               padding: 4px 10px; border-bottom: 1px solid var(--side-line); text-align: center;
+               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+  #frames.cmp .panelabel { display: block; }
+  #frames.flip .panelabel { cursor: pointer; }
+  #pane2 { display: none; }
+  #frames.cmp #pane2 { display: flex; border-left: 3px solid var(--side-bg); }
+  #frames.cmp.stacked #pane2 { border-left: 0; border-top: 3px solid var(--side-bg); }
+  #frames.cmp.flip #pane2 { border-left: 0; border-top: 0; }
+  /* flip: keep both panes laid out full-size (visibility, not display) so the
+     hidden Plotly plot always has the right width when it is revealed */
+  #frames.cmp.flip { position: relative; }
+  #frames.cmp.flip .pane { position: absolute; inset: 0; }
+  #frames.cmp.flip #pane1:not(.show), #frames.cmp.flip #pane2:not(.show) { visibility: hidden; }
+  #frames.swapped #pane1 { order: 2; }
+  #frames.swapped #pane2 { order: 1; }
+  #frames.cmp.swapped #pane2 { border-left: 0; border-top: 0; }
+  #frames.cmp.swapped:not(.flip) #pane1 { border-left: 3px solid var(--side-bg); }
+  #frames.cmp.stacked.swapped #pane1 { border-left: 0; border-top: 3px solid var(--side-bg); }
+  #grid { flex: 1; display: none; overflow-y: auto; padding: 12px;
+          grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+          grid-auto-rows: 360px; gap: 12px; background: var(--bg); }
+  .gcell { display: flex; flex-direction: column; border: 1px solid var(--line);
+           border-radius: 8px; background: #fff; overflow: hidden; }
+  .gcell.cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .gcell header { font-size: 12px; font-weight: 600; padding: 5px 10px; background: #f0f3f8;
+                  color: #333; cursor: pointer; border-bottom: 1px solid var(--line);
+                  flex-shrink: 0; }
+  .gcell header:hover { color: var(--accent); }
+  .gcell iframe { flex: 1; border: 0; width: 100%; }
+  .gempty { flex: 1; display: flex; align-items: center; justify-content: center;
+            color: var(--ink3); font-size: 20px; }
+  #palette { display: none; position: fixed; inset: 0; background: rgba(10,16,28,.55);
+             z-index: 50; }
+  #palette.open { display: flex; align-items: flex-start; justify-content: center;
+                  padding-top: 12vh; }
+  #palbox { width: 560px; max-width: 90vw; background: var(--panel); border-radius: 10px;
+            box-shadow: 0 12px 40px rgba(0,0,0,.35); overflow: hidden; }
+  #palinput { width: 100%; border: 0; padding: 14px 16px; font-size: 15px;
+              font-family: inherit; outline: none; border-bottom: 1px solid var(--line);
+              color: var(--ink); background: var(--panel); }
+  #palresults { max-height: 50vh; overflow-y: auto; }
+  .palrow { padding: 9px 16px; font-size: 13.5px; cursor: pointer; color: var(--ink);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .palrow.sel { background: var(--accent-soft); color: var(--accent); }
+</style>
+</head>
+<body>
+<aside id="sidebar">
+  <header>
+    <div class="brand">EnergyScope — pathway</div>
+    <select id="casesel" title="Switch to another run"><option>S8_results</option></select>
+  </header>
+  <input id="navsearch" type="search" placeholder="Filter charts…  ( / )">
+  <nav id="nav"></nav>
+</aside>
+<main>
+  <div id="topbar">
+    <div id="titlerow">
+      <h1 id="charttitle"></h1>
+      <div id="tools">
+        <select id="cmpsel"><option value="">Compare with…</option></select>
+        <div id="cmptools">
+          <button id="lay-stack" title="Stack the two cases vertically">⊟ stack</button>
+          <button id="lay-side" title="Show the two cases side by side">◫ side</button>
+          <button id="lay-flip" title="One case at a time — press space to flip">⇄ flip</button>
+          <button id="cmpswap" title="Swap the order of the two cases">⇅ swap</button>
+        </div>
+        <a id="openraw" target="_blank">Open in new tab ↗</a>
+      </div>
+    </div>
+    <div id="chips"></div>
+  </div>
+  <div id="frames" class="stacked">
+    <div class="pane" id="pane1"><div class="panelabel" id="cmpA"></div><iframe id="viewer"></iframe></div>
+    <div class="pane" id="pane2"><div class="panelabel" id="cmpB"></div><iframe id="viewer2"></iframe></div>
+  </div>
+  <div id="grid"></div>
+</main>
+<div id="palette"><div id="palbox">
+  <input id="palinput" type="text" placeholder="Jump to chart, year, view…  (Ctrl+K)">
+  <div id="palresults"></div>
+</div></div>
+<script>
+const NAV = [{"section": "Overview", "items": [{"order": -1, "label": "System summary", "dims": [], "files": {"": "../0_Summary.html"}, "slug": "overview-system-summary"}, {"order": 0, "label": "GHG emissions", "dims": [], "files": {"": "0_GWP.html"}, "slug": "overview-ghg-emissions"}, {"order": 1, "label": "Transition cost", "dims": [], "files": {"": "0b_Transition_cost.html"}, "slug": "overview-transition-cost"}, {"order": 2, "label": "Total cost breakdown", "dims": [], "files": {"": "1d_Total_cost_breakdown.html"}, "slug": "overview-total-cost-breakdown"}]}, {"section": "Initial 2020", "items": [{"order": 3, "label": "Installed capacity", "dims": [{"name": "Type", "values": ["energy", "freight", "passenger"], "labels": {"energy": "Energy", "passenger": "Passenger", "freight": "Freight"}}], "files": {"energy": "00a_Init_capacity_energy.html", "freight": "00a_Init_capacity_freight.html", "passenger": "00a_Init_capacity_passenger.html"}, "slug": "initial-2020-installed-capacity"}, {"order": 4, "label": "Annual production", "dims": [{"name": "Type", "values": ["energy", "freight", "passenger"], "labels": {"energy": "Energy", "passenger": "Passenger", "freight": "Freight"}}], "files": {"energy": "00b_Init_annual_prod_energy.html", "freight": "00b_Init_annual_prod_freight.html", "passenger": "00b_Init_annual_prod_passenger.html"}, "slug": "initial-2020-annual-production"}, {"order": 5, "label": "CAPEX", "dims": [], "files": {"": "00c_Init_capex.html"}, "slug": "initial-2020-capex"}, {"order": 6, "label": "Resources", "dims": [], "files": {"": "00d_Init_resources.html"}, "slug": "initial-2020-resources"}]}, {"section": "Costs", "items": [{"order": 7, "label": "CAPEX", "dims": [{"name": "View", "values": ["breakdown", "CRF_AMPL", "CRF_par_installation", "CRF_par_phase_active", "no_actu", "no_actu_breakdown", "summary"], "labels": {"no_actu": "No Actu", "CRF_par_phase_active": "CRF Par Phase Active", "summary": "Summary", "breakdown": "Breakdown", "CRF_par_installation": "CRF Par Installation", "CRF_AMPL": "CRF AMPL", "no_actu_breakdown": "No Actu Breakdown"}}], "files": {"CRF_AMPL": "1b_CAPEX_CRF_AMPL.html", "CRF_par_installation": "1b_CAPEX_CRF_par_installation.html", "CRF_par_phase_active": "1b_CAPEX_CRF_par_phase_active.html", "breakdown": "1b_CAPEX_breakdown.html", "no_actu": "1b_CAPEX_no_actu.html", "no_actu_breakdown": "1b_CAPEX_no_actu_breakdown.html", "summary": "1b_CAPEX_summary.html"}, "slug": "costs-capex"}, {"order": 8, "label": "OPEX", "dims": [{"name": "View", "values": ["breakdown", "no_actu_breakdown"], "labels": {"breakdown": "Breakdown", "no_actu_breakdown": "No Actu Breakdown"}}], "files": {"breakdown": "1c_OPEX_breakdown.html", "no_actu_breakdown": "1c_OPEX_no_actu_breakdown.html"}, "slug": "costs-opex"}]}, {"section": "Capacity", "items": [{"order": 9, "label": "Installed (F_Mult)", "dims": [{"name": "Category", "values": ["ELECTRICITY", "HEAT_LOW_T", "HEAT_HIGH_T", "H2_SYNFUELS", "MOB_PRIVATE", "MOB_PUBLIC", "MOB_FREIGHT", "INFRASTRUCTURE", "STORAGE", "CO2"], "labels": {"MOB_PRIVATE": "Mob Private", "MOB_FREIGHT": "Mob Freight", "STORAGE": "Storage", "HEAT_LOW_T": "Heat Low T", "INFRASTRUCTURE": "Infrastructure", "HEAT_HIGH_T": "Heat High T", "ELECTRICITY": "Electricity", "CO2": "CO2", "H2_SYNFUELS": "H2 Synfuels", "MOB_PUBLIC": "Mob Public"}}], "files": {"CO2": "4c_F_Mult_CO2.html", "ELECTRICITY": "4c_F_Mult_ELECTRICITY.html", "H2_SYNFUELS": "4c_F_Mult_H2_SYNFUELS.html", "HEAT_HIGH_T": "4c_F_Mult_HEAT_HIGH_T.html", "HEAT_LOW_T": "4c_F_Mult_HEAT_LOW_T.html", "INFRASTRUCTURE": "4c_F_Mult_INFRASTRUCTURE.html", "MOB_FREIGHT": "4c_F_Mult_MOB_FREIGHT.html", "MOB_PRIVATE": "4c_F_Mult_MOB_PRIVATE.html", "MOB_PUBLIC": "4c_F_Mult_MOB_PUBLIC.html", "STORAGE": "4c_F_Mult_STORAGE.html"}, "slug": "capacity-installed-f-mult"}, {"order": 10, "label": "New installations (F_new)", "dims": [{"name": "Category", "values": ["ELECTRICITY", "HEAT_LOW_T", "HEAT_HIGH_T", "H2_SYNFUELS", "MOB_PRIVATE", "MOB_PUBLIC", "MOB_FREIGHT", "INFRASTRUCTURE", "STORAGE", "CO2"], "labels": {"MOB_PRIVATE": "Mob Private", "MOB_FREIGHT": "Mob Freight", "STORAGE": "Storage", "HEAT_LOW_T": "Heat Low T", "INFRASTRUCTURE": "Infrastructure", "HEAT_HIGH_T": "Heat High T", "ELECTRICITY": "Electricity", "CO2": "CO2", "H2_SYNFUELS": "H2 Synfuels", "MOB_PUBLIC": "Mob Public"}}], "files": {"CO2": "2_F_new_CO2.html", "ELECTRICITY": "2_F_new_ELECTRICITY.html", "H2_SYNFUELS": "2_F_new_H2_SYNFUELS.html", "HEAT_HIGH_T": "2_F_new_HEAT_HIGH_T.html", "HEAT_LOW_T": "2_F_new_HEAT_LOW_T.html", "INFRASTRUCTURE": "2_F_new_INFRASTRUCTURE.html", "MOB_FREIGHT": "2_F_new_MOB_FREIGHT.html", "MOB_PRIVATE": "2_F_new_MOB_PRIVATE.html", "MOB_PUBLIC": "2_F_new_MOB_PUBLIC.html", "STORAGE": "2_F_new_STORAGE.html"}, "slug": "capacity-new-installations-f-new"}, {"order": 11, "label": "End of life (F_old)", "dims": [{"name": "Category", "values": ["ELECTRICITY", "HEAT_LOW_T", "HEAT_HIGH_T", "H2_SYNFUELS", "MOB_PRIVATE", "MOB_PUBLIC", "MOB_FREIGHT", "CO2"], "labels": {"MOB_PRIVATE": "Mob Private", "MOB_FREIGHT": "Mob Freight", "HEAT_LOW_T": "Heat Low T", "HEAT_HIGH_T": "Heat High T", "ELECTRICITY": "Electricity", "CO2": "CO2", "H2_SYNFUELS": "H2 Synfuels", "MOB_PUBLIC": "Mob Public"}}], "files": {"CO2": "3_F_old_CO2.html", "ELECTRICITY": "3_F_old_ELECTRICITY.html", "H2_SYNFUELS": "3_F_old_H2_SYNFUELS.html", "HEAT_HIGH_T": "3_F_old_HEAT_HIGH_T.html", "HEAT_LOW_T": "3_F_old_HEAT_LOW_T.html", "MOB_FREIGHT": "3_F_old_MOB_FREIGHT.html", "MOB_PRIVATE": "3_F_old_MOB_PRIVATE.html", "MOB_PUBLIC": "3_F_old_MOB_PUBLIC.html"}, "slug": "capacity-end-of-life-f-old"}, {"order": 12, "label": "Decommissioning (F_decom)", "dims": [{"name": "Category", "values": ["ELECTRICITY", "HEAT_LOW_T", "HEAT_HIGH_T", "H2_SYNFUELS", "MOB_PRIVATE", "MOB_PUBLIC", "MOB_FREIGHT", "STORAGE", "CO2"], "labels": {"MOB_PRIVATE": "Mob Private", "MOB_FREIGHT": "Mob Freight", "STORAGE": "Storage", "HEAT_LOW_T": "Heat Low T", "HEAT_HIGH_T": "Heat High T", "ELECTRICITY": "Electricity", "CO2": "CO2", "H2_SYNFUELS": "H2 Synfuels", "MOB_PUBLIC": "Mob Public"}}], "files": {"CO2": "3b_F_decom_CO2.html", "ELECTRICITY": "3b_F_decom_ELECTRICITY.html", "H2_SYNFUELS": "3b_F_decom_H2_SYNFUELS.html", "HEAT_HIGH_T": "3b_F_decom_HEAT_HIGH_T.html", "HEAT_LOW_T": "3b_F_decom_HEAT_LOW_T.html", "MOB_FREIGHT": "3b_F_decom_MOB_FREIGHT.html", "MOB_PRIVATE": "3b_F_decom_MOB_PRIVATE.html", "MOB_PUBLIC": "3b_F_decom_MOB_PUBLIC.html", "STORAGE": "3b_F_decom_STORAGE.html"}, "slug": "capacity-decommissioning-f-decom"}, {"order": 13, "label": "Number of units", "dims": [{"name": "Category", "values": ["ELECTRICITY", "HEAT_LOW_T", "HEAT_HIGH_T", "H2_SYNFUELS", "MOB_PRIVATE", "MOB_PUBLIC", "MOB_FREIGHT", "CO2"], "labels": {"MOB_PRIVATE": "Mob Private", "MOB_FREIGHT": "Mob Freight", "HEAT_LOW_T": "Heat Low T", "HEAT_HIGH_T": "Heat High T", "ELECTRICITY": "Electricity", "CO2": "CO2", "H2_SYNFUELS": "H2 Synfuels", "MOB_PUBLIC": "Mob Public"}}], "files": {"CO2": "9_NumberOfUnits_CO2.html", "ELECTRICITY": "9_NumberOfUnits_ELECTRICITY.html", "H2_SYNFUELS": "9_NumberOfUnits_H2_SYNFUELS.html", "HEAT_HIGH_T": "9_NumberOfUnits_HEAT_HIGH_T.html", "HEAT_LOW_T": "9_NumberOfUnits_HEAT_LOW_T.html", "MOB_FREIGHT": "9_NumberOfUnits_MOB_FREIGHT.html", "MOB_PRIVATE": "9_NumberOfUnits_MOB_PRIVATE.html", "MOB_PUBLIC": "9_NumberOfUnits_MOB_PUBLIC.html"}, "slug": "capacity-number-of-units"}]}, {"section": "Production", "items": [{"order": 14, "label": "Resources", "dims": [], "files": {"": "4_Resources.html"}, "slug": "production-resources"}, {"order": 15, "label": "Annual production", "dims": [{"name": "Category", "values": ["ELECTRICITY", "HEAT_LOW_T", "HEAT_HIGH_T", "H2_SYNFUELS", "MOB_PRIVATE", "MOB_PUBLIC", "MOB_FREIGHT", "INFRASTRUCTURE", "CO2"], "labels": {"MOB_PRIVATE": "Mob Private", "MOB_FREIGHT": "Mob Freight", "HEAT_LOW_T": "Heat Low T", "INFRASTRUCTURE": "Infrastructure", "HEAT_HIGH_T": "Heat High T", "ELECTRICITY": "Electricity", "CO2": "CO2", "H2_SYNFUELS": "H2 Synfuels", "MOB_PUBLIC": "Mob Public"}}], "files": {"CO2": "5_Annual_prod_CO2.html", "ELECTRICITY": "5_Annual_prod_ELECTRICITY.html", "H2_SYNFUELS": "5_Annual_prod_H2_SYNFUELS.html", "HEAT_HIGH_T": "5_Annual_prod_HEAT_HIGH_T.html", "HEAT_LOW_T": "5_Annual_prod_HEAT_LOW_T.html", "INFRASTRUCTURE": "5_Annual_prod_INFRASTRUCTURE.html", "MOB_FREIGHT": "5_Annual_prod_MOB_FREIGHT.html", "MOB_PRIVATE": "5_Annual_prod_MOB_PRIVATE.html", "MOB_PUBLIC": "5_Annual_prod_MOB_PUBLIC.html"}, "slug": "production-annual-production"}, {"order": 16, "label": "Monthly production", "dims": [{"name": "Year", "values": ["2020", "2025", "2030", "2035", "2040", "2045", "2050"], "labels": {"2025": "2025", "2045": "2045", "2040": "2040", "2030": "2030", "2035": "2035", "2050": "2050", "2020": "2020"}}, {"name": "Category", "values": ["ELECTRICITY", "HEAT_LOW_T", "HEAT_HIGH_T", "H2_SYNFUELS", "MOB_PRIVATE", "MOB_PUBLIC", "MOB_FREIGHT", "INFRASTRUCTURE", "STORAGE", "CO2"], "labels": {"MOB_PRIVATE": "Mob Private", "MOB_FREIGHT": "Mob Freight", "STORAGE": "Storage", "HEAT_LOW_T": "Heat Low T", "INFRASTRUCTURE": "Infrastructure", "HEAT_HIGH_T": "Heat High T", "ELECTRICITY": "Electricity", "CO2": "CO2", "H2_SYNFUELS": "H2 Synfuels", "MOB_PUBLIC": "Mob Public"}}], "files": {"2020|ELECTRICITY": "6_Monthly_prod_2020_ELECTRICITY.html", "2020|H2_SYNFUELS": "6_Monthly_prod_2020_H2_SYNFUELS.html", "2020|HEAT_HIGH_T": "6_Monthly_prod_2020_HEAT_HIGH_T.html", "2020|HEAT_LOW_T": "6_Monthly_prod_2020_HEAT_LOW_T.html", "2020|INFRASTRUCTURE": "6_Monthly_prod_2020_INFRASTRUCTURE.html", "2020|MOB_FREIGHT": "6_Monthly_prod_2020_MOB_FREIGHT.html", "2020|MOB_PRIVATE": "6_Monthly_prod_2020_MOB_PRIVATE.html", "2020|MOB_PUBLIC": "6_Monthly_prod_2020_MOB_PUBLIC.html", "2025|ELECTRICITY": "6_Monthly_prod_2025_ELECTRICITY.html", "2025|H2_SYNFUELS": "6_Monthly_prod_2025_H2_SYNFUELS.html", "2025|HEAT_HIGH_T": "6_Monthly_prod_2025_HEAT_HIGH_T.html", "2025|HEAT_LOW_T": "6_Monthly_prod_2025_HEAT_LOW_T.html", "2025|INFRASTRUCTURE": "6_Monthly_prod_2025_INFRASTRUCTURE.html", "2025|MOB_FREIGHT": "6_Monthly_prod_2025_MOB_FREIGHT.html", "2025|MOB_PRIVATE": "6_Monthly_prod_2025_MOB_PRIVATE.html", "2025|MOB_PUBLIC": "6_Monthly_prod_2025_MOB_PUBLIC.html", "2030|CO2": "6_Monthly_prod_2030_CO2.html", "2030|ELECTRICITY": "6_Monthly_prod_2030_ELECTRICITY.html", "2030|H2_SYNFUELS": "6_Monthly_prod_2030_H2_SYNFUELS.html", "2030|HEAT_HIGH_T": "6_Monthly_prod_2030_HEAT_HIGH_T.html", "2030|HEAT_LOW_T": "6_Monthly_prod_2030_HEAT_LOW_T.html", "2030|INFRASTRUCTURE": "6_Monthly_prod_2030_INFRASTRUCTURE.html", "2030|MOB_FREIGHT": "6_Monthly_prod_2030_MOB_FREIGHT.html", "2030|MOB_PRIVATE": "6_Monthly_prod_2030_MOB_PRIVATE.html", "2030|MOB_PUBLIC": "6_Monthly_prod_2030_MOB_PUBLIC.html", "2030|STORAGE": "6_Monthly_prod_2030_STORAGE.html", "2035|CO2": "6_Monthly_prod_2035_CO2.html", "2035|ELECTRICITY": "6_Monthly_prod_2035_ELECTRICITY.html", "2035|H2_SYNFUELS": "6_Monthly_prod_2035_H2_SYNFUELS.html", "2035|HEAT_HIGH_T": "6_Monthly_prod_2035_HEAT_HIGH_T.html", "2035|HEAT_LOW_T": "6_Monthly_prod_2035_HEAT_LOW_T.html", "2035|INFRASTRUCTURE": "6_Monthly_prod_2035_INFRASTRUCTURE.html", "2035|MOB_FREIGHT": "6_Monthly_prod_2035_MOB_FREIGHT.html", "2035|MOB_PRIVATE": "6_Monthly_prod_2035_MOB_PRIVATE.html", "2035|MOB_PUBLIC": "6_Monthly_prod_2035_MOB_PUBLIC.html", "2035|STORAGE": "6_Monthly_prod_2035_STORAGE.html", "2040|CO2": "6_Monthly_prod_2040_CO2.html", "2040|ELECTRICITY": "6_Monthly_prod_2040_ELECTRICITY.html", "2040|H2_SYNFUELS": "6_Monthly_prod_2040_H2_SYNFUELS.html", "2040|HEAT_HIGH_T": "6_Monthly_prod_2040_HEAT_HIGH_T.html", "2040|HEAT_LOW_T": "6_Monthly_prod_2040_HEAT_LOW_T.html", "2040|INFRASTRUCTURE": "6_Monthly_prod_2040_INFRASTRUCTURE.html", "2040|MOB_FREIGHT": "6_Monthly_prod_2040_MOB_FREIGHT.html", "2040|MOB_PRIVATE": "6_Monthly_prod_2040_MOB_PRIVATE.html", "2040|MOB_PUBLIC": "6_Monthly_prod_2040_MOB_PUBLIC.html", "2040|STORAGE": "6_Monthly_prod_2040_STORAGE.html", "2045|CO2": "6_Monthly_prod_2045_CO2.html", "2045|ELECTRICITY": "6_Monthly_prod_2045_ELECTRICITY.html", "2045|H2_SYNFUELS": "6_Monthly_prod_2045_H2_SYNFUELS.html", "2045|HEAT_HIGH_T": "6_Monthly_prod_2045_HEAT_HIGH_T.html", "2045|HEAT_LOW_T": "6_Monthly_prod_2045_HEAT_LOW_T.html", "2045|INFRASTRUCTURE": "6_Monthly_prod_2045_INFRASTRUCTURE.html", "2045|MOB_FREIGHT": "6_Monthly_prod_2045_MOB_FREIGHT.html", "2045|MOB_PRIVATE": "6_Monthly_prod_2045_MOB_PRIVATE.html", "2045|MOB_PUBLIC": "6_Monthly_prod_2045_MOB_PUBLIC.html", "2045|STORAGE": "6_Monthly_prod_2045_STORAGE.html", "2050|CO2": "6_Monthly_prod_2050_CO2.html", "2050|ELECTRICITY": "6_Monthly_prod_2050_ELECTRICITY.html", "2050|H2_SYNFUELS": "6_Monthly_prod_2050_H2_SYNFUELS.html", "2050|HEAT_HIGH_T": "6_Monthly_prod_2050_HEAT_HIGH_T.html", "2050|HEAT_LOW_T": "6_Monthly_prod_2050_HEAT_LOW_T.html", "2050|INFRASTRUCTURE": "6_Monthly_prod_2050_INFRASTRUCTURE.html", "2050|MOB_FREIGHT": "6_Monthly_prod_2050_MOB_FREIGHT.html", "2050|MOB_PRIVATE": "6_Monthly_prod_2050_MOB_PRIVATE.html", "2050|MOB_PUBLIC": "6_Monthly_prod_2050_MOB_PUBLIC.html", "2050|STORAGE": "6_Monthly_prod_2050_STORAGE.html"}, "slug": "production-monthly-production"}, {"order": 17, "label": "Monthly resources", "dims": [{"name": "Year", "values": ["2020", "2025", "2030", "2035", "2040", "2045", "2050"], "labels": {"2025": "2025", "2045": "2045", "2040": "2040", "2030": "2030", "2035": "2035", "2050": "2050", "2020": "2020"}}], "files": {"2020": "6b_Monthly_resources_2020.html", "2025": "6b_Monthly_resources_2025.html", "2030": "6b_Monthly_resources_2030.html", "2035": "6b_Monthly_resources_2035.html", "2040": "6b_Monthly_resources_2040.html", "2045": "6b_Monthly_resources_2045.html", "2050": "6b_Monthly_resources_2050.html"}, "slug": "production-monthly-resources"}, {"order": 18, "label": "Load factors", "dims": [{"name": "Year", "values": ["2020", "2025", "2030", "2035", "2040", "2045", "2050"], "labels": {"2025": "2025", "2045": "2045", "2040": "2040", "2030": "2030", "2035": "2035", "2050": "2050", "2020": "2020"}}, {"name": "Type", "values": ["grid", "mobility", "standard", "storage"], "labels": {"storage": "Storage", "grid": "Grid", "mobility": "Mobility", "standard": "Standard"}}], "files": {"2020|grid": "7_Load_factor_2020_grid.html", "2020|mobility": "7_Load_factor_2020_mobility.html", "2020|standard": "7_Load_factor_2020_standard.html", "2025|grid": "7_Load_factor_2025_grid.html", "2025|mobility": "7_Load_factor_2025_mobility.html", "2025|standard": "7_Load_factor_2025_standard.html", "2030|grid": "7_Load_factor_2030_grid.html", "2030|mobility": "7_Load_factor_2030_mobility.html", "2030|standard": "7_Load_factor_2030_standard.html", "2030|storage": "7_Load_factor_2030_storage.html", "2035|grid": "7_Load_factor_2035_grid.html", "2035|mobility": "7_Load_factor_2035_mobility.html", "2035|standard": "7_Load_factor_2035_standard.html", "2035|storage": "7_Load_factor_2035_storage.html", "2040|grid": "7_Load_factor_2040_grid.html", "2040|mobility": "7_Load_factor_2040_mobility.html", "2040|standard": "7_Load_factor_2040_standard.html", "2040|storage": "7_Load_factor_2040_storage.html", "2045|grid": "7_Load_factor_2045_grid.html", "2045|mobility": "7_Load_factor_2045_mobility.html", "2045|standard": "7_Load_factor_2045_standard.html", "2045|storage": "7_Load_factor_2045_storage.html", "2050|grid": "7_Load_factor_2050_grid.html", "2050|mobility": "7_Load_factor_2050_mobility.html", "2050|standard": "7_Load_factor_2050_standard.html", "2050|storage": "7_Load_factor_2050_storage.html"}, "slug": "production-load-factors"}]}, {"section": "Energy balances", "items": [{"order": 19, "label": "Electricity layers", "dims": [{"name": "Layer", "values": ["ALL", "EHV", "HV", "MV", "LV"], "labels": {"MV": "MV", "HV": "HV", "ALL": "All", "LV": "LV", "EHV": "EHV"}}], "files": {"ALL": "10_Elec_layer_ALL.html", "EHV": "10_Elec_layer_EHV.html", "HV": "10_Elec_layer_HV.html", "LV": "10_Elec_layer_LV.html", "MV": "10_Elec_layer_MV.html"}, "slug": "energy-balances-electricity-layers"}, {"order": 20, "label": "Electricity monthly", "dims": [{"name": "Year", "values": ["2020", "2025", "2030", "2035", "2040", "2045", "2050"], "labels": {"2025": "2025", "2045": "2045", "2040": "2040", "2030": "2030", "2035": "2035", "2050": "2050", "2020": "2020"}}], "files": {"2020": "18_Elec_monthly_2020.html", "2025": "18_Elec_monthly_2025.html", "2030": "18_Elec_monthly_2030.html", "2035": "18_Elec_monthly_2035.html", "2040": "18_Elec_monthly_2040.html", "2045": "18_Elec_monthly_2045.html", "2050": "18_Elec_monthly_2050.html"}, "slug": "energy-balances-electricity-monthly"}, {"order": 21, "label": "Heat layers", "dims": [{"name": "Layer", "values": ["ALL", "High_T", "Low_T_decen.", "Waste_heat", "Low_T_DHN"], "labels": {"ALL": "All", "High_T": "High T", "Waste_heat": "Waste Heat", "Low_T_decen.": "Low T Decen.", "Low_T_DHN": "Low T DHN"}}], "files": {"ALL": "11_Heat_layer_ALL.html", "High_T": "11_Heat_layer_High_T.html", "Low_T_DHN": "11_Heat_layer_Low_T_DHN.html", "Low_T_decen.": "11_Heat_layer_Low_T_decen..html", "Waste_heat": "11_Heat_layer_Waste_heat.html"}, "slug": "energy-balances-heat-layers"}, {"order": 22, "label": "H2 layers", "dims": [{"name": "Layer", "values": ["ALL", "EHP", "HP", "MP"], "labels": {"MP": "MP", "HP": "HP", "EHP": "EHP", "ALL": "All"}}], "files": {"ALL": "12b_H2_layer_ALL.html", "EHP": "12b_H2_layer_EHP.html", "HP": "12b_H2_layer_HP.html", "MP": "12b_H2_layer_MP.html"}, "slug": "energy-balances-h2-layers"}, {"order": 23, "label": "H2 monthly", "dims": [{"name": "Year", "values": ["2030", "2035", "2040", "2045", "2050"], "labels": {"2045": "2045", "2040": "2040", "2030": "2030", "2035": "2035", "2050": "2050"}}], "files": {"2030": "99_H2_monthly_2030.html", "2035": "99_H2_monthly_2035.html", "2040": "99_H2_monthly_2040.html", "2045": "99_H2_monthly_2045.html", "2050": "99_H2_monthly_2050.html"}, "slug": "energy-balances-h2-monthly"}, {"order": 24, "label": "NG layers", "dims": [{"name": "Layer", "values": ["ALL", "NG_EHP", "NG_HP", "NG_MP", "NG_LP"], "labels": {"NG_EHP": "NG EHP", "NG_HP": "NG HP", "ALL": "All", "NG_MP": "NG MP", "NG_LP": "NG LP"}}], "files": {"ALL": "12c_NG_layer_ALL.html", "NG_EHP": "12c_NG_layer_NG_EHP.html", "NG_HP": "12c_NG_layer_NG_HP.html", "NG_LP": "12c_NG_layer_NG_LP.html", "NG_MP": "12c_NG_layer_NG_MP.html"}, "slug": "energy-balances-ng-layers"}]}, {"section": "Mobility", "items": [{"order": 25, "label": "Passenger demand", "dims": [{"name": "Distance", "values": ["ALL", "SD", "MD", "LD"], "labels": {"MD": "MD", "LD": "LD", "ALL": "All", "SD": "SD"}}], "files": {"ALL": "13_Mob_Passenger_ALL.html", "LD": "13_Mob_Passenger_LD.html", "MD": "13_Mob_Passenger_MD.html", "SD": "13_Mob_Passenger_SD.html"}, "slug": "mobility-passenger-demand"}, {"order": 26, "label": "Freight demand", "dims": [{"name": "Distance", "values": ["ALL", "SD", "MD", "LD", "ELD"], "labels": {"MD": "MD", "LD": "LD", "ALL": "All", "SD": "SD", "ELD": "ELD"}}], "files": {"ALL": "13_Mob_Freight_ALL.html", "ELD": "13_Mob_Freight_ELD.html", "LD": "13_Mob_Freight_LD.html", "MD": "13_Mob_Freight_MD.html", "SD": "13_Mob_Freight_SD.html"}, "slug": "mobility-freight-demand"}, {"order": 27, "label": "Modal mix", "dims": [{"name": "Segment", "values": ["FREIGHT", "PRIVATE", "PUBLIC"], "labels": {"PUBLIC": "Public", "PRIVATE": "Private", "FREIGHT": "Freight"}}], "files": {"FREIGHT": "8_Mobility_FREIGHT.html", "PRIVATE": "8_Mobility_PRIVATE.html", "PUBLIC": "8_Mobility_PUBLIC.html"}, "slug": "mobility-modal-mix"}]}, {"section": "Emissions & flows", "items": [{"order": 28, "label": "GHG by sector", "dims": [], "files": {"": "14_GWP_breakdown.html"}, "slug": "emissions-flows-ghg-by-sector"}, {"order": 29, "label": "Energy Sankey", "dims": [{"name": "Year", "values": ["2020", "2025", "2030", "2035", "2040", "2045", "2050"], "labels": {"2025": "2025", "2045": "2045", "2040": "2040", "2030": "2030", "2035": "2035", "2050": "2050", "2020": "2020"}}], "files": {"2020": "16_Sankey_2020.html", "2025": "16_Sankey_2025.html", "2030": "16_Sankey_2030.html", "2035": "16_Sankey_2035.html", "2040": "16_Sankey_2040.html", "2045": "16_Sankey_2045.html", "2050": "16_Sankey_2050.html"}, "slug": "emissions-flows-energy-sankey"}, {"order": 30, "label": "CO2 Sankey", "dims": [{"name": "Year", "values": ["2020", "2025", "2030", "2035", "2040", "2045", "2050"], "labels": {"2025": "2025", "2045": "2045", "2040": "2040", "2030": "2030", "2035": "2035", "2050": "2050", "2020": "2020"}}], "files": {"2020": "17_CO2_Sankey_2020.html", "2025": "17_CO2_Sankey_2025.html", "2030": "17_CO2_Sankey_2030.html", "2035": "17_CO2_Sankey_2035.html", "2040": "17_CO2_Sankey_2040.html", "2045": "17_CO2_Sankey_2045.html", "2050": "17_CO2_Sankey_2050.html"}, "slug": "emissions-flows-co2-sankey"}]}, {"section": "Other", "items": [{"order": 999, "dims": [], "files": {"": "15_Storage_levels.html"}, "label": "Storage Levels", "slug": "other-storage-levels"}, {"order": 999, "dims": [], "files": {"": "6c_Monthly_CO2_storage_2030.html"}, "label": "Monthly CO2 Storage 2030", "slug": "other-monthly-co2-storage-2030"}, {"order": 999, "dims": [], "files": {"": "6c_Monthly_CO2_storage_2035.html"}, "label": "Monthly CO2 Storage 2035", "slug": "other-monthly-co2-storage-2035"}, {"order": 999, "dims": [], "files": {"": "6c_Monthly_CO2_storage_2040.html"}, "label": "Monthly CO2 Storage 2040", "slug": "other-monthly-co2-storage-2040"}, {"order": 999, "dims": [], "files": {"": "6c_Monthly_CO2_storage_2045.html"}, "label": "Monthly CO2 Storage 2045", "slug": "other-monthly-co2-storage-2045"}, {"order": 999, "dims": [], "files": {"": "6c_Monthly_CO2_storage_2050.html"}, "label": "Monthly CO2 Storage 2050", "slug": "other-monthly-co2-storage-2050"}]}];
+const CASES = ["Budget_sans_contraintes_rate_change", "S0_results", "S1_results", "S2_results", "S3_results", "S4_results", "S5_results", "S6_results", "S7_results", "SDR_1", "SDR_12", "SDR_15", "c_op_NG_EHP_0_01", "c_op_NG_EHP_0_012", "c_op_NG_EHP_0_01321", "c_op_NG_EHP_0_014", "c_op_NG_EHP_0_016", "c_op_NG_EHP_0_018", "formulation_comparison_actu", "formulation_comparison_annu", "formulation_comparison_new_rate_annu", "iRate_Constant", "iRate_Decreasing", "iRate_Increasing", "iRate_PolicyStep", "my_first_run", "rate_LT_10", "rate_LT_100", "rate_LT_20", "rate_LT_33", "rate_LT_40", "rate_LT_60", "rate_LT_80", "sens_irate_04pct_up", "sens_ref_no_co2_budget", "sens_renew_irate_06pct", "sens_renew_irate_12pct"];
+const CASENAME = "S8_results";
+const viewer  = document.getElementById('viewer');
+const viewer2 = document.getElementById('viewer2');
+const chipsEl = document.getElementById('chips');
+const titleEl = document.getElementById('charttitle');
+const openEl  = document.getElementById('openraw');
+const navEl   = document.getElementById('nav');
+const cmpsel  = document.getElementById('cmpsel');
+const casesel = document.getElementById('casesel');
+const framesEl = document.getElementById('frames');
+const cmptools = document.getElementById('cmptools');
+const pane1 = document.getElementById('pane1');
+const pane2 = document.getElementById('pane2');
+const layBtns = { stack: document.getElementById('lay-stack'),
+                  side:  document.getElementById('lay-side'),
+                  flip:  document.getElementById('lay-flip') };
+const swapBtn  = document.getElementById('cmpswap');
+const searchEl = document.getElementById('navsearch');
+const gridEl   = document.getElementById('grid');
+const paletteEl = document.getElementById('palette');
+const palinput  = document.getElementById('palinput');
+const palresults = document.getElementById('palresults');
+let cmpLayout = localStorage.getItem('cmpLayout') || 'stack';
+if (!(cmpLayout in layBtns)) cmpLayout = 'stack';
+let cmpSwapped = false;
+let flipShown = 0;
+let playTimer = null;
+let pinned = [];
+try { pinned = JSON.parse(localStorage.getItem('pinnedCharts') || '[]'); } catch (e) {}
+if (!Array.isArray(pinned)) pinned = [];
+let pinBtnMap = {};
+let pinHdr = null, pinList = null;
+let gridDim = null;
+const PAL = [];
+let palSel = 0, palItems = [];
+let cur = null;
+const memo = {};
+const BYSLUG = {};
+const FLAT = [];
+const navBtn = {};
+let globalYear = null;
+let syncYears = true;
+let compareCase = '';
+let lastHash = '';
+
+function keyOf(sel) { return sel.join('|'); }
+
+function defaultSel(item) {
+  if (!item.dims.length) return [];
+  let sels = [[]];
+  for (const d of item.dims) {
+    const next = [];
+    for (const s of sels) for (const v of d.values) next.push(s.concat(v));
+    sels = next;
+  }
+  for (const s of sels) if (item.files[keyOf(s)]) return s;
+  return [];
+}
+
+function bestSel(item, dimIdx, value, prevSel) {
+  let best = null, bestScore = -1;
+  for (const k of Object.keys(item.files)) {
+    const parts = k === '' ? [] : k.split('|');
+    if (parts[dimIdx] !== value) continue;
+    let score = 0;
+    prevSel.forEach((v, i) => { if (i !== dimIdx && parts[i] === v) score++; });
+    if (score > bestScore) { bestScore = score; best = parts; }
+  }
+  return best;
+}
+
+function applyGlobalYear(item, sel) {
+  if (!syncYears || globalYear === null) return sel;
+  const i = item.dims.findIndex(d => d.name === 'Year');
+  if (i < 0 || sel[i] === globalYear || item.dims[i].values.indexOf(globalYear) < 0) return sel;
+  const t = sel.slice(); t[i] = globalYear;
+  if (item.files[keyOf(t)]) return t;
+  return bestSel(item, i, globalYear, sel) || sel;
+}
+
+function selectItem(item, selOverride) {
+  if (cur && cur.item !== item) gridDim = null;
+  document.querySelectorAll('.item.active').forEach(b => b.classList.remove('active'));
+  if (navBtn[item.slug]) {
+    navBtn[item.slug].classList.add('active');
+    navBtn[item.slug].scrollIntoView({ block: 'nearest' });
+  }
+  if (pinBtnMap[item.slug]) pinBtnMap[item.slug].classList.add('active');
+  let sel = selOverride || memo[item.slug] || defaultSel(item);
+  if (!selOverride) sel = applyGlobalYear(item, sel);
+  cur = { item: item, sel: sel };
+  render();
+}
+
+function pickChip(i, v) {
+  const trial = cur.sel.slice(); trial[i] = v;
+  if (cur.item.files[keyOf(trial)]) {
+    cur.sel = trial;
+  } else {
+    const b = bestSel(cur.item, i, v, cur.sel);
+    if (!b) return;
+    cur.sel = b;
+  }
+  memo[cur.item.slug] = cur.sel;
+  if (cur.item.dims[i] && cur.item.dims[i].name === 'Year') globalYear = cur.sel[i];
+  render();
+}
+
+function stepDim(i, delta) {
+  if (!cur || i < 0 || i >= cur.item.dims.length) return;
+  const vals = cur.item.dims[i].values;
+  const idx = vals.indexOf(cur.sel[i]) + delta;
+  if (idx < 0 || idx >= vals.length) return;
+  pickChip(i, vals[idx]);
+}
+
+function stepArrow(delta, shifted) {
+  if (!cur || !cur.item.dims.length) return;
+  const yi = cur.item.dims.findIndex(d => d.name === 'Year');
+  let i;
+  if (shifted) i = cur.item.dims.findIndex((d, j) => j !== yi);
+  else i = yi >= 0 ? yi : 0;
+  stepDim(i, delta);
+}
+
+function stepItem(delta) {
+  if (!cur) return;
+  let i = FLAT.indexOf(cur.item);
+  do {
+    i += delta;
+    if (i < 0 || i >= FLAT.length) return;
+  } while (navBtn[FLAT[i].slug].style.display === 'none');
+  selectItem(FLAT[i]);
+}
+
+function filterNav(q) {
+  q = q.trim().toLowerCase();
+  NAV.forEach(sec => {
+    let any = false;
+    sec.items.forEach(item => {
+      item._match = null;
+      let hit = !q || item.label.toLowerCase().indexOf(q) >= 0
+                   || sec.section.toLowerCase().indexOf(q) >= 0;
+      if (!hit) {
+        for (let i = 0; i < item.dims.length && !hit; i++) {
+          const d = item.dims[i];
+          for (let k = 0; k < d.values.length; k++) {
+            const v = d.values[k];
+            const lbl = String(d.labels[v] || v).toLowerCase();
+            if (lbl.indexOf(q) >= 0 || String(v).toLowerCase().indexOf(q) >= 0) {
+              hit = true; item._match = { i: i, v: v };
+              break;
+            }
+          }
+        }
+      }
+      navBtn[item.slug].style.display = hit ? '' : 'none';
+      navBtn[item.slug].title = item._match
+        ? 'Match — ' + item.dims[item._match.i].name + ': '
+          + (item.dims[item._match.i].labels[item._match.v] || item._match.v)
+        : '';
+      if (hit) any = true;
+    });
+    if (sec._hdr) sec._hdr.style.display = any ? '' : 'none';
+  });
+}
+
+function stopPlay() {
+  if (playTimer) { clearInterval(playTimer); playTimer = null; }
+}
+
+function togglePlay() {
+  if (playTimer) { stopPlay(); render(); return; }
+  if (!cur || cur.item.dims.findIndex(d => d.name === 'Year') < 0) return;
+  playTimer = setInterval(() => {
+    if (!cur) { stopPlay(); return; }
+    const i = cur.item.dims.findIndex(d => d.name === 'Year');
+    if (i < 0) { stopPlay(); render(); return; }
+    const vals = cur.item.dims[i].values;
+    let idx = vals.indexOf(cur.sel[i]) + 1;
+    if (idx >= vals.length) idx = 0;
+    pickChip(i, vals[idx]);
+  }, 1300);
+  render();
+}
+
+function makeItemButton(item) {
+  const b = document.createElement('button'); b.className = 'item';
+  const lab = document.createElement('span'); lab.className = 'itemlabel';
+  lab.textContent = item.label;
+  const st = document.createElement('span'); st.className = 'pin';
+  st.textContent = pinned.indexOf(item.slug) >= 0 ? '★' : '☆';
+  st.title = 'Pin / unpin';
+  st.onclick = e => { e.stopPropagation(); togglePin(item.slug); };
+  b.appendChild(lab); b.appendChild(st);
+  return b;
+}
+
+function togglePin(slug) {
+  const i = pinned.indexOf(slug);
+  if (i >= 0) pinned.splice(i, 1); else pinned.push(slug);
+  localStorage.setItem('pinnedCharts', JSON.stringify(pinned));
+  refreshPins();
+}
+
+function refreshPins() {
+  Object.keys(navBtn).forEach(s => {
+    const on = pinned.indexOf(s) >= 0;
+    navBtn[s].classList.toggle('pinned', on);
+    navBtn[s].querySelector('.pin').textContent = on ? '★' : '☆';
+  });
+  pinBtnMap = {};
+  pinList.innerHTML = '';
+  const valid = pinned.filter(s => BYSLUG[s]);
+  pinHdr.style.display = valid.length ? '' : 'none';
+  if (NAV.length && NAV[0]._hdr) {
+    NAV[0]._hdr.style.borderTop = valid.length ? '' : '0';
+    NAV[0]._hdr.style.marginTop = valid.length ? '' : '4px';
+  }
+  valid.forEach(s => {
+    const item = BYSLUG[s];
+    const b = makeItemButton(item);
+    b.classList.add('pinned');
+    b.onclick = () => selectItem(item);
+    if (cur && cur.item.slug === s) b.classList.add('active');
+    pinBtnMap[s] = b;
+    pinList.appendChild(b);
+  });
+}
+
+function toggleGrid(i) {
+  gridDim = (gridDim === i) ? null : i;
+  render();
+}
+
+function renderGrid() {
+  const item = cur.item, gi = gridDim, d = item.dims[gi];
+  gridEl.innerHTML = '';
+  d.values.forEach(v => {
+    const s = cur.sel.slice(); s[gi] = v;
+    const f = item.files[keyOf(s)];
+    const cell = document.createElement('div');
+    cell.className = 'gcell' + (v === cur.sel[gi] ? ' cur' : '');
+    const h = document.createElement('header');
+    h.textContent = d.labels[v] || v;
+    h.title = 'Open full size';
+    h.onclick = () => { gridDim = null; pickChip(gi, v); };
+    cell.appendChild(h);
+    if (f) {
+      const ifr = document.createElement('iframe');
+      ifr.loading = 'lazy';
+      ifr.src = f;
+      cell.appendChild(ifr);
+    } else {
+      const ph = document.createElement('div'); ph.className = 'gempty';
+      ph.textContent = 'not available';
+      cell.appendChild(ph);
+    }
+    gridEl.appendChild(cell);
+  });
+}
+
+function fuzzy(q, s) {
+  s = s.toLowerCase();
+  const idx = s.indexOf(q);
+  if (idx >= 0) return 1000 - idx;
+  let i = 0, score = 0, last = -2;
+  for (let k = 0; k < q.length; k++) {
+    if (q[k] === ' ') continue;
+    i = s.indexOf(q[k], i);
+    if (i < 0) return -1;
+    score += (i === last + 1) ? 3 : 1;
+    last = i; i++;
+  }
+  return score;
+}
+
+function setPalSel(i) {
+  palSel = i;
+  Array.from(palresults.children).forEach((el, j) => {
+    el.classList.toggle('sel', j === palSel);
+    if (j === palSel) el.scrollIntoView({ block: 'nearest' });
+  });
+}
+
+function palRender() {
+  const q = palinput.value.trim().toLowerCase();
+  if (!q) {
+    palItems = PAL.filter(p => p.dim === null).slice(0, 15);
+  } else {
+    const scored = [];
+    PAL.forEach(p => { const s = fuzzy(q, p.text); if (s > 0) scored.push([s, p]); });
+    scored.sort((a, b) => b[0] - a[0]);
+    palItems = scored.slice(0, 12).map(x => x[1]);
+  }
+  if (palSel >= palItems.length) palSel = 0;
+  palresults.innerHTML = '';
+  palItems.forEach((p, i) => {
+    const r = document.createElement('div');
+    r.className = 'palrow' + (i === palSel ? ' sel' : '');
+    r.textContent = p.text;
+    r.onclick = () => palGo(p);
+    r.onmouseenter = () => setPalSel(i);
+    palresults.appendChild(r);
+  });
+}
+
+function palGo(p) {
+  closePalette();
+  if (p.dim === null) { selectItem(p.item); return; }
+  const base = memo[p.item.slug] || defaultSel(p.item);
+  const sel = base[p.dim] === p.v ? base : bestSel(p.item, p.dim, p.v, base);
+  selectItem(p.item, sel || base);
+}
+
+function openPalette() {
+  paletteEl.classList.add('open');
+  palinput.value = '';
+  palSel = 0;
+  palRender();
+  palinput.focus();
+}
+
+function closePalette() {
+  paletteEl.classList.remove('open');
+  palinput.blur();
+}
+
+function pathFor(f, c) {
+  if (!c) return f;
+  if (f.indexOf('../') === 0) return '../../' + c + '/' + f.slice(3);
+  return '../../' + c + '/graphs/' + f;
+}
+
+function updateHash() {
+  if (!cur) return;
+  let h = '#' + [cur.item.slug].concat(cur.sel.map(encodeURIComponent)).join('/');
+  if (compareCase) h += '~' + encodeURIComponent(compareCase);
+  lastHash = h;
+  if (location.hash !== h) location.hash = h;
+}
+
+function applyHash() {
+  let h = location.hash.slice(1);
+  if (!h) return false;
+  let cmp = '';
+  const ti = h.indexOf('~');
+  if (ti >= 0) { cmp = decodeURIComponent(h.slice(ti + 1)); h = h.slice(0, ti); }
+  const parts = h.split('/').map(decodeURIComponent);
+  const item = BYSLUG[parts[0]];
+  if (!item) return false;
+  compareCase = CASES.indexOf(cmp) >= 0 ? cmp : '';
+  cmpsel.value = compareCase;
+  let sel = parts.slice(1);
+  if (sel.length !== item.dims.length || !item.files[keyOf(sel)]) sel = null;
+  if (sel) {
+    const yi = item.dims.findIndex(d => d.name === 'Year');
+    if (yi >= 0) globalYear = sel[yi];
+  }
+  selectItem(item, sel);
+  return true;
+}
+
+function updatePaneLabels() {
+  const hint = (compareCase && cmpLayout === 'flip') ? '  ·  space or click to flip' : '';
+  document.getElementById('cmpA').textContent = CASENAME + hint;
+  document.getElementById('cmpB').textContent = (compareCase || '') + hint;
+}
+
+function nudgePlotResize() {
+  // Best effort: blocked cross-frame under file:// in some browsers, hence try/catch.
+  requestAnimationFrame(() => {
+    [viewer, viewer2].forEach(fr => {
+      try { fr.contentWindow.dispatchEvent(new Event('resize')); } catch (e) {}
+    });
+  });
+}
+
+function applyCmpLayout() {
+  framesEl.classList.toggle('stacked', cmpLayout === 'stack');
+  framesEl.classList.toggle('flip', cmpLayout === 'flip');
+  framesEl.classList.toggle('swapped', cmpSwapped);
+  Object.keys(layBtns).forEach(k => layBtns[k].classList.toggle('on', cmpLayout === k));
+  swapBtn.style.display = cmpLayout === 'flip' ? 'none' : '';
+  pane1.classList.toggle('show', flipShown === 0);
+  pane2.classList.toggle('show', flipShown === 1);
+  updatePaneLabels();
+  nudgePlotResize();
+}
+
+function flipCase() {
+  if (!compareCase || cmpLayout !== 'flip') return;
+  flipShown = 1 - flipShown;
+  pane1.classList.toggle('show', flipShown === 0);
+  pane2.classList.toggle('show', flipShown === 1);
+  nudgePlotResize();
+}
+
+function render() {
+  const item = cur.item, sel = cur.sel;
+  chipsEl.innerHTML = '';
+  const yi = item.dims.findIndex(d => d.name === 'Year');
+  item.dims.forEach((d, i) => {
+    const row = document.createElement('div'); row.className = 'chiprow';
+    const nm = document.createElement('span'); nm.className = 'dimname'; nm.textContent = d.name;
+    row.appendChild(nm);
+    const hint = (i === yi || (yi < 0 && i === 0)) ? '' : 'Shift+';
+    const bp = document.createElement('button'); bp.className = 'step'; bp.textContent = '‹';
+    bp.title = 'Previous ' + d.name + ' (' + hint + '←)';
+    bp.onclick = () => stepDim(i, -1); row.appendChild(bp);
+    d.values.forEach(v => {
+      const c = document.createElement('button'); c.className = 'chip';
+      c.textContent = d.labels[v] || v;
+      if (sel[i] === v) {
+        c.classList.add('on');
+      } else {
+        const t = sel.slice(); t[i] = v;
+        if (!item.files[keyOf(t)]) c.classList.add('miss');
+      }
+      c.onclick = () => pickChip(i, v);
+      row.appendChild(c);
+    });
+    const bn = document.createElement('button'); bn.className = 'step'; bn.textContent = '›';
+    bn.title = 'Next ' + d.name + ' (' + hint + '→)';
+    bn.onclick = () => stepDim(i, 1); row.appendChild(bn);
+    if (d.values.length > 1) {
+      const gb = document.createElement('button');
+      gb.className = 'step' + (gridDim === i ? ' on' : '');
+      gb.textContent = '⊞';
+      gb.title = gridDim === i ? 'Back to single view (g / Esc)'
+                               : 'Show every ' + d.name + ' in a grid (g)';
+      gb.onclick = () => toggleGrid(i);
+      row.appendChild(gb);
+    }
+    if (d.name === 'Year') {
+      const pb = document.createElement('button');
+      pb.className = 'step' + (playTimer ? ' on' : '');
+      pb.textContent = playTimer ? '⏸' : '▶';
+      pb.title = playTimer ? 'Pause (p)' : 'Play through the years (p)';
+      pb.onclick = togglePlay;
+      row.appendChild(pb);
+      const sy = document.createElement('button');
+      sy.className = 'step' + (syncYears ? ' on' : '');
+      sy.textContent = 'sync';
+      sy.title = 'Keep this year when switching chart families';
+      sy.onclick = () => { syncYears = !syncYears; if (syncYears) globalYear = cur.sel[i]; render(); };
+      row.appendChild(sy);
+    }
+    chipsEl.appendChild(row);
+  });
+  if (gridDim !== null && gridDim < item.dims.length) {
+    framesEl.style.display = 'none';
+    gridEl.style.display = 'grid';
+    renderGrid();
+    titleEl.innerHTML = item.label +
+      ' <small>— every ' + item.dims[gridDim].name + '</small>';
+    updateHash();
+    return;
+  }
+  gridDim = null;
+  framesEl.style.display = '';
+  gridEl.style.display = 'none';
+  gridEl.innerHTML = '';
+  const f = item.files[keyOf(sel)];
+  if (!f) return;
+  if (viewer.getAttribute('src') !== f) viewer.src = f;
+  openEl.href = f;
+  if (compareCase) {
+    const f2 = pathFor(f, compareCase);
+    if (viewer2.getAttribute('src') !== f2) viewer2.src = f2;
+    if (!framesEl.classList.contains('cmp')) {
+      framesEl.classList.add('cmp');
+      nudgePlotResize();
+    }
+    cmptools.style.display = 'flex';
+  } else {
+    framesEl.classList.remove('cmp');
+    cmptools.style.display = 'none';
+  }
+  updatePaneLabels();
+  titleEl.innerHTML = item.label + (sel.length
+    ? ' <small>— ' + sel.map((v, i) => item.dims[i].labels[v] || v).join(' · ') + '</small>'
+    : '');
+  updateHash();
+}
+
+(function init() {
+  pinHdr = document.createElement('div'); pinHdr.className = 'sec'; pinHdr.textContent = '★ Pinned';
+  pinHdr.style.display = 'none';
+  navEl.appendChild(pinHdr);
+  pinList = document.createElement('div');
+  navEl.appendChild(pinList);
+  NAV.forEach(sec => {
+    const h = document.createElement('div'); h.className = 'sec'; h.textContent = sec.section;
+    sec._hdr = h;
+    navEl.appendChild(h);
+    sec.items.forEach(item => {
+      BYSLUG[item.slug] = item;
+      FLAT.push(item);
+      const b = makeItemButton(item);
+      b.onclick = () => {
+        if (item._match) {
+          const base = memo[item.slug] || defaultSel(item);
+          const sel = base[item._match.i] === item._match.v
+            ? base : bestSel(item, item._match.i, item._match.v, base);
+          selectItem(item, sel || base);
+        } else selectItem(item);
+      };
+      navBtn[item.slug] = b;
+      navEl.appendChild(b);
+    });
+  });
+  refreshPins();
+  NAV.forEach(sec => sec.items.forEach(item => {
+    PAL.push({ text: sec.section + ' › ' + item.label, item: item, dim: null, v: null });
+    item.dims.forEach((d, i) => d.values.forEach(v => {
+      PAL.push({ text: sec.section + ' › ' + item.label + ' › ' + d.name + ': '
+                       + (d.labels[v] || v),
+                 item: item, dim: i, v: v });
+    }));
+  }));
+  palinput.oninput = () => { palSel = 0; palRender(); };
+  palinput.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setPalSel(Math.min(palSel + 1, palItems.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setPalSel(Math.max(palSel - 1, 0)); }
+    else if (e.key === 'Enter') { if (palItems[palSel]) palGo(palItems[palSel]); }
+    else if (e.key === 'Escape') closePalette();
+    e.stopPropagation();
+  });
+  paletteEl.onclick = e => { if (e.target === paletteEl) closePalette(); };
+  if (!CASES.length) cmpsel.style.display = 'none';
+  CASES.forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c;
+    cmpsel.appendChild(o);
+  });
+  cmpsel.onchange = () => { compareCase = cmpsel.value; render(); };
+  casesel.disabled = !CASES.length;
+  CASES.forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c;
+    casesel.appendChild(o);
+  });
+  casesel.value = CASENAME;
+  casesel.onchange = () => {
+    const c = casesel.value;
+    if (c === CASENAME) return;
+    // Keep the current chart/selection via the hash; if we were comparing with
+    // the run we switch to, compare back with the run we came from.
+    let h = '';
+    if (cur) {
+      h = '#' + [cur.item.slug].concat(cur.sel.map(encodeURIComponent)).join('/');
+      if (compareCase) h += '~' + encodeURIComponent(compareCase === c ? CASENAME : compareCase);
+    }
+    location.href = '../../' + encodeURIComponent(c) + '/graphs/index.html' + h;
+  };
+  Object.keys(layBtns).forEach(k => {
+    layBtns[k].onclick = () => {
+      cmpLayout = k;
+      localStorage.setItem('cmpLayout', k);
+      applyCmpLayout();
+    };
+  });
+  swapBtn.onclick = () => { cmpSwapped = !cmpSwapped; applyCmpLayout(); };
+  document.getElementById('cmpA').onclick = flipCase;
+  document.getElementById('cmpB').onclick = flipCase;
+  searchEl.oninput = () => filterNav(searchEl.value);
+  applyCmpLayout();
+  if (!applyHash()) {
+    const first = NAV.length && NAV[0].items.length ? NAV[0].items[0] : null;
+    if (first) selectItem(first);
+  }
+})();
+
+window.addEventListener('hashchange', () => {
+  if (location.hash === lastHash) return;
+  applyHash();
+});
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    if (paletteEl.classList.contains('open')) closePalette(); else openPalette();
+    return;
+  }
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) {
+    if (e.key === 'Escape' && t === searchEl) { searchEl.value = ''; filterNav(''); searchEl.blur(); }
+    return;
+  }
+  if (e.key === 'ArrowLeft') stepArrow(-1, e.shiftKey);
+  else if (e.key === 'ArrowRight') stepArrow(1, e.shiftKey);
+  else if (e.key === 'ArrowUp') { e.preventDefault(); stepItem(-1); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); stepItem(1); }
+  else if (e.key === ' ') {
+    if (compareCase && cmpLayout === 'flip') { e.preventDefault(); flipCase(); }
+  }
+  else if (e.key === 'p') togglePlay();
+  else if (e.key === 'g') {
+    if (cur && cur.item.dims.length) {
+      if (gridDim !== null) toggleGrid(gridDim);
+      else {
+        const yi = cur.item.dims.findIndex(d => d.name === 'Year');
+        toggleGrid(yi >= 0 ? yi : 0);
+      }
+    }
+  }
+  else if (e.key === 'Escape') {
+    if (gridDim !== null) { gridDim = null; render(); }
+  }
+  else if (e.key === '/') { e.preventDefault(); searchEl.focus(); }
+});
+</script>
+</body>
+</html>

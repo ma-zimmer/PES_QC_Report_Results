@@ -20,7 +20,8 @@ SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOURCE_OUT_DIR = os.path.join(SITE_DIR, '..', 'EnergyScope-Quebec', 'projects', 'pathway', 'out')
 
 # Published scenarios. S0 was a preliminary run (not published). S8 (the full
-# combination) predates S7 and does not include its public-mobility constraint.
+# combination) now includes all five of S3-S7's modifications, public
+# mobility included.
 SCENARIOS = [
     'S1_results',
     'S2_results',
@@ -151,10 +152,9 @@ def sync_scenario(name):
 # ---------------------------------------------------------------------------
 # Landing page — a single connected spine (git-graph style): S1 -> S2 build a
 # shared baseline, a split marker fans out into five modifications tested in
-# isolation (S3-S7), and a merge marker brings four of them (S3-S6) back
-# together into S8 — S8 predates S7, so it does not include the public-mobility
-# constraint. Content is bespoke (not templated from SCENARIOS) since the
-# narrative structure — which scenario builds on which — is fixed.
+# isolation (S3-S7), and a merge marker brings all five back together into S8.
+# Content is bespoke (not templated from SCENARIOS) since the narrative
+# structure — which scenario builds on which — is fixed.
 # ---------------------------------------------------------------------------
 
 _PAGE_TEMPLATE = """<!DOCTYPE html>
@@ -329,8 +329,6 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
     font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; color: var(--ink-soft);
     border: 1px dashed var(--ghost-line); border-radius: 999px; padding: 0.2rem 0.5rem; white-space: nowrap;
   }
-  .notmerged { font-size: 0.76rem; color: var(--ink-soft); font-style: italic; margin-top: 0.5rem; }
-
   .trunkline.endpoint .node { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .trunkline.endpoint .card { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; margin-bottom: 0; }
   .chip.all { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
@@ -358,7 +356,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
     <p class="eyebrow">EnergyScope-Québec &middot; Pathway model</p>
     <h1>Transition scenario results</h1>
     <p class="lede">This site accompanies the report and gives access to the interactive dashboard for each simulated scenario.</p>
-    <p class="lede"><b>S1</b> and <b>S2</b> build a common baseline. From there, <b>S3&ndash;S7</b> each test <b>one</b> modification in isolation &mdash; not on top of one another &mdash; and <b>S8</b> combines the four that were tested.</p>
+    <p class="lede"><b>S1</b> and <b>S2</b> build a common baseline. From there, <b>S3&ndash;S7</b> each test <b>one</b> modification in isolation &mdash; not on top of one another &mdash; and <b>S8</b> combines all five that were tested.</p>
   </header>
 
   <div class="trunkline" id="s1">
@@ -477,7 +475,6 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
             <p class="desc">Linearly increases the short-distance (SD) public mobility share from 11.87% in 2025 to 64.6% in 2050, and removes 2064.7 Mpkm/y from public aviation (LD).</p>
             <div class="chips"><span class="chip new">+ Public mobility</span></div>
             <div class="kpis"><span><b>__S7_COST__</b> B$ cost</span><span><b>__S7_GWP__</b> Mt cumul. GWP</span></div>
-            <p class="notmerged">Not included in the S8 combination below &mdash; S8 predates this scenario.</p>
             <div class="actions">
               <a class="btn primary" href="S7_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S7_results/0_Summary.html">Summary</a>
@@ -491,14 +488,14 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
 
   <div class="marker">
     <div class="railcol"><div class="diamond"></div></div>
-    <div class="note">S8 combines the <b>four</b> branches above (carbon budget, change rate, distributed investment, carbon capture) into one scenario.</div>
+    <div class="note">S8 combines all <b>five</b> branches above (carbon budget, change rate, distributed investment, carbon capture, public mobility) into one scenario.</div>
   </div>
 
   <div class="trunkline endpoint" id="s8">
     <div class="railcol"><div class="node">S8</div></div>
     <div class="card">
       <div class="cardhead"><h3 class="cardtitle">Full combination</h3><span class="tag">S8_results</span></div>
-      <p class="desc">S1 + S2 baseline, with the four modifications from S3 to S6 applied together in a single scenario.</p>
+      <p class="desc">S1 + S2 baseline, with the five modifications from S3 to S7 applied together in a single scenario.</p>
       <div class="chips">
         <span class="chip base">&check; 2035 emissions cap</span>
         <span class="chip base">&check; 2050 carbon neutrality</span>
@@ -507,6 +504,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
         <span class="chip all">&check; Limited change rate</span>
         <span class="chip all">&check; Distributed investment</span>
         <span class="chip all">&check; Carbon capture limit</span>
+        <span class="chip all">&check; Public mobility</span>
       </div>
       <div class="kpis"><span><b>__S8_COST__</b> B$ transition cost</span><span><b>__S8_GWP__</b> Mt cumul. GWP</span></div>
       <div class="actions">

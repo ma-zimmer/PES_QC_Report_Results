@@ -9,7 +9,9 @@ Usage:
     3. Run: python sync_results.py
     4. git add -A && git commit -m "Add <name> results" && git push
 """
+import json
 import os
+import re
 import shutil
 
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +30,27 @@ SCENARIOS = [
     'S8_results',
 ]
 
+# plot_results.py's dashboard embeds a "switch run" / "compare with" case list
+# built from whatever sibling folders exist in the LOCAL out/ directory at
+# generation time — every experimental run on the author's machine, not just
+# the ones published here. Rewrite that embedded list to only the scenarios
+# this site actually publishes, so the dropdown on the live site can't offer
+# (or link to) a run that doesn't exist there.
+_CASES_RE = re.compile(r'const CASES = \[.*?\];', re.DOTALL)
+
+
+def _restrict_cases(dashboard_path, current_name):
+    with open(dashboard_path, encoding='utf-8') as f:
+        html = f.read()
+    published_siblings = [s for s in SCENARIOS if s != current_name]
+    new_html, n = _CASES_RE.subn(
+        f'const CASES = {json.dumps(published_siblings)};', html, count=1)
+    if n == 0:
+        print(f'  WARN {current_name}: CASES array not found, dashboard left as-is')
+        return
+    with open(dashboard_path, 'w', encoding='utf-8') as f:
+        f.write(new_html)
+
 
 def sync_scenario(name):
     src = os.path.join(SOURCE_OUT_DIR, name)
@@ -43,6 +66,9 @@ def sync_scenario(name):
         extra_src = os.path.join(src, extra)
         if os.path.exists(extra_src):
             shutil.copy2(extra_src, dst)
+    dashboard = os.path.join(dst, 'graphs', 'index.html')
+    if os.path.exists(dashboard):
+        _restrict_cases(dashboard, name)
     print(f'  OK   {name}')
     return True
 

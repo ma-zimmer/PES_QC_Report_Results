@@ -14,6 +14,8 @@ import os
 import re
 import shutil
 
+import pandas as pd
+
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOURCE_OUT_DIR = os.path.join(SITE_DIR, '..', 'EnergyScope-Quebec', 'projects', 'pathway', 'out')
 
@@ -52,13 +54,82 @@ def _restrict_cases(dashboard_path, current_name):
         f.write(new_html)
 
 
+# Same lightning-bolt glyph as the cursor, reused as the browser-tab icon —
+# consistent branding, no extra asset file. Injected right after <head> in the
+# pages a reader lands on directly (the landing page itself, each scenario's
+# dashboard, and its quick-summary chart); the ~230 individual chart pages per
+# scenario are only ever seen inside an iframe, so their tab icon never shows.
+_FAVICON_LINK = (
+    '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' '
+    'viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M13 2 3 14h7l-1 8 11-14h-7z\' fill=\'%23ffd166\' '
+    'stroke=\'%23101820\' stroke-width=\'1.3\' stroke-linejoin=\'round\'/%3E%3C/svg%3E">'
+)
+_HEAD_RE = re.compile(r'<head[^>]*>', re.IGNORECASE)
+
+
+def _inject_favicon(path):
+    with open(path, encoding='utf-8') as f:
+        html = f.read()
+    if 'rel="icon"' in html:
+        return
+    new_html, n = _HEAD_RE.subn(lambda m: m.group(0) + _FAVICON_LINK, html, count=1)
+    if n == 0:
+        print(f'  WARN {path}: <head> not found, favicon not injected')
+        return
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(new_html)
+
+
+# ---------------------------------------------------------------------------
+# KPI extraction — minimal subset of generate_report.py's extract_scenario(),
+# just the two numbers shown on each landing-page card.
+# ---------------------------------------------------------------------------
+
+def _extract_kpis(name):
+    kpi = {'transition_cost': None, 'cum_gwp': None}
+    pkl_path = os.path.join(SOURCE_OUT_DIR, name, '_Results.pkl')
+    if not os.path.exists(pkl_path):
+        return kpi
+    try:
+        results = pd.read_pickle(pkl_path)
+    except Exception as e:
+        print(f'  WARN {name}: could not read _Results.pkl for KPIs ({e})')
+        return kpi
+
+    tc = results.get('Transition_cost')
+    if tc is not None and not tc.empty:
+        val = pd.to_numeric(tc.iloc[:, 0], errors='coerce').iloc[0]
+        if pd.notna(val):
+            kpi['transition_cost'] = float(val) / 1e3  # M$ -> B$
+
+    tg = results.get('TotalGwp')
+    if tg is not None and not tg.empty:
+        df = tg.reset_index()
+        year_col = df.columns[0]
+        val_col = 'TotalGWP' if 'TotalGWP' in df.columns else df.columns[1]
+        df['yr'] = df[year_col].astype(str).str.replace('YEAR_', '').astype(int)
+        df['val'] = pd.to_numeric(df[val_col], errors='coerce') / 1e3  # kt -> Mt
+        gwp = {int(y): v for y, v in zip(df['yr'], df['val']) if pd.notna(v)}
+        yrs = sorted(gwp)
+        if len(yrs) >= 2:
+            cum = 0.0
+            for y0, y1 in zip(yrs[:-1], yrs[1:]):
+                cum += (y1 - y0) * (gwp[y0] + gwp[y1]) / 2.0
+            kpi['cum_gwp'] = cum
+    return kpi
+
+
+def _fmt_kpi(val):
+    return f'{val:,.0f}' if val is not None else '–'
+
+
 def sync_scenario(name):
     src = os.path.join(SOURCE_OUT_DIR, name)
     dst = os.path.join(SITE_DIR, name)
     src_graphs = os.path.join(src, 'graphs')
     if not os.path.isdir(src_graphs):
         print(f'  SKIP {name}: no graphs/ folder found at {src_graphs}')
-        return False
+        return False, {}
     if os.path.isdir(dst):
         shutil.rmtree(dst)
     shutil.copytree(src_graphs, os.path.join(dst, 'graphs'))
@@ -69,8 +140,12 @@ def sync_scenario(name):
     dashboard = os.path.join(dst, 'graphs', 'index.html')
     if os.path.exists(dashboard):
         _restrict_cases(dashboard, name)
+        _inject_favicon(dashboard)
+    summary = os.path.join(dst, '0_Summary.html')
+    if os.path.exists(summary):
+        _inject_favicon(summary)
     print(f'  OK   {name}')
-    return True
+    return True, _extract_kpis(name)
 
 
 # ---------------------------------------------------------------------------
@@ -88,6 +163,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scenario Results — EnergyScope-Québec</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 3 14h7l-1 8 11-14h-7z' fill='%23ffd166' stroke='%23101820' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
   @media (prefers-color-scheme: dark) {
     :root {
@@ -173,6 +249,12 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
     font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
     font-size: 0.7rem; letter-spacing: 0.06em; color: var(--ink-soft);
   }
+  .copylink {
+    margin-left: auto; font: inherit; font-size: 0.7rem; padding: 0.15rem 0.55rem;
+    border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--ink-soft); white-space: nowrap;
+  }
+  .copylink:hover { border-color: var(--accent); color: var(--accent-strong); }
   .desc { color: var(--ink-soft); margin: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
   .chip {
@@ -182,6 +264,8 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   }
   .chip.base { border-color: var(--rail-done); color: var(--accent-strong); font-weight: 600; }
   .chip.new { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .kpis { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-size: 0.82rem; color: var(--ink-soft); }
+  .kpis b { color: var(--ink); font-variant-numeric: tabular-nums; }
   .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
   .btn {
     display: inline-flex; align-items: center; gap: 0.4rem;
@@ -202,6 +286,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   .trunkline .cardtitle { font-size: 1.08rem; margin-bottom: 0.3rem; }
   .trunkline .desc { font-size: 0.92rem; max-width: 52ch; margin-bottom: 0.8rem; }
   .trunkline .chips { margin-bottom: 0.9rem; }
+  .trunkline .kpis { margin-bottom: 0.9rem; }
   .trunkline .btn { font-size: 0.87rem; padding: 0.48rem 0.8rem; }
 
   .marker { position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; margin-bottom: 0.4rem; }
@@ -233,6 +318,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   .subcard .cardtitle { font-size: 0.96rem; margin-bottom: 0.2rem; }
   .subcard .desc { font-size: 0.85rem; margin-bottom: 0.6rem; }
   .subcard .chips { margin-bottom: 0.75rem; }
+  .subcard .kpis { margin-bottom: 0.75rem; font-size: 0.78rem; }
   .subcard .btn { font-size: 0.8rem; padding: 0.38rem 0.65rem; }
 
   .substep.ghost .subcard { background: var(--ghost-bg); border-style: dashed; border-color: var(--ghost-line); }
@@ -284,6 +370,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
         <span class="chip base">2035 emissions cap</span>
         <span class="chip base">2050 carbon neutrality</span>
       </div>
+      <div class="kpis"><span><b>__S1_COST__</b> B$ transition cost</span><span><b>__S1_GWP__</b> Mt cumul. GWP</span></div>
       <div class="actions">
         <a class="btn primary" href="S1_results/graphs/index.html">Explore the dashboard &rarr;</a>
         <a class="btn ghost" href="S1_results/0_Summary.html">Quick summary</a>
@@ -301,6 +388,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
         <span class="chip">&check; 2050 carbon neutrality</span>
         <span class="chip new">+ Initial stock spreading</span>
       </div>
+      <div class="kpis"><span><b>__S2_COST__</b> B$ transition cost</span><span><b>__S2_GWP__</b> Mt cumul. GWP</span></div>
       <div class="actions">
         <a class="btn primary" href="S2_results/graphs/index.html">Explore the dashboard &rarr;</a>
         <a class="btn ghost" href="S2_results/0_Summary.html">Quick summary</a>
@@ -324,6 +412,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
             <div class="cardhead"><h3 class="cardtitle">Carbon budget</h3></div>
             <p class="desc">Adds a cumulative carbon budget over 2020&ndash;2050.</p>
             <div class="chips"><span class="chip new">+ Carbon budget</span></div>
+            <div class="kpis"><span><b>__S3_COST__</b> B$ cost</span><span><b>__S3_GWP__</b> Mt cumul. GWP</span></div>
             <div class="actions">
               <a class="btn primary" href="S3_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S3_results/0_Summary.html">Summary</a>
@@ -339,6 +428,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
             <div class="cardhead"><h3 class="cardtitle">Limited change rate</h3></div>
             <p class="desc">Adds a constraint limiting how fast technologies can be deployed from one phase to the next.</p>
             <div class="chips"><span class="chip new">+ Limited change rate</span></div>
+            <div class="kpis"><span><b>__S4_COST__</b> B$ cost</span><span><b>__S4_GWP__</b> Mt cumul. GWP</span></div>
             <div class="actions">
               <a class="btn primary" href="S4_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S4_results/0_Summary.html">Summary</a>
@@ -354,6 +444,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
             <div class="cardhead"><h3 class="cardtitle">Distributed investment</h3></div>
             <p class="desc">Adds a constraint spreading investment over time rather than concentrating it in a single phase.</p>
             <div class="chips"><span class="chip new">+ Distributed investment</span></div>
+            <div class="kpis"><span><b>__S5_COST__</b> B$ cost</span><span><b>__S5_GWP__</b> Mt cumul. GWP</span></div>
             <div class="actions">
               <a class="btn primary" href="S5_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S5_results/0_Summary.html">Summary</a>
@@ -369,6 +460,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
             <div class="cardhead"><h3 class="cardtitle">Carbon capture limit</h3></div>
             <p class="desc">Adds a limit on the available carbon capture (CC) capacity.</p>
             <div class="chips"><span class="chip new">+ Carbon capture limit</span></div>
+            <div class="kpis"><span><b>__S6_COST__</b> B$ cost</span><span><b>__S6_GWP__</b> Mt cumul. GWP</span></div>
             <div class="actions">
               <a class="btn primary" href="S6_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S6_results/0_Summary.html">Summary</a>
@@ -384,6 +476,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
             <div class="cardhead"><h3 class="cardtitle">Public mobility</h3></div>
             <p class="desc">Linearly increases the short-distance (SD) public mobility share from 11.87% in 2025 to 64.6% in 2050, and removes 2064.7 Mpkm/y from public aviation (LD).</p>
             <div class="chips"><span class="chip new">+ Public mobility</span></div>
+            <div class="kpis"><span><b>__S7_COST__</b> B$ cost</span><span><b>__S7_GWP__</b> Mt cumul. GWP</span></div>
             <p class="notmerged">Not included in the S8 combination below &mdash; S8 predates this scenario.</p>
             <div class="actions">
               <a class="btn primary" href="S7_results/graphs/index.html">Dashboard &rarr;</a>
@@ -415,6 +508,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
         <span class="chip all">&check; Distributed investment</span>
         <span class="chip all">&check; Carbon capture limit</span>
       </div>
+      <div class="kpis"><span><b>__S8_COST__</b> B$ transition cost</span><span><b>__S8_GWP__</b> Mt cumul. GWP</span></div>
       <div class="actions">
         <a class="btn primary" href="S8_results/graphs/index.html">Explore the dashboard &rarr;</a>
         <a class="btn ghost" href="S8_results/0_Summary.html">Quick summary</a>
@@ -428,22 +522,51 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   </footer>
 
 </div>
+<script>
+  document.querySelectorAll('[id^="s"]').forEach(function (container) {
+    var head = container.querySelector('.cardhead');
+    if (!head) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copylink';
+    btn.textContent = 'Copy link';
+    btn.title = 'Copy a link to this scenario';
+    btn.onclick = function () {
+      var url = location.origin + location.pathname + '#' + container.id;
+      navigator.clipboard.writeText(url).then(function () {
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy link'; }, 1400);
+      });
+    };
+    head.appendChild(btn);
+  });
+</script>
 </body>
 </html>
 """
 
 
-def build_index():
-    with open(os.path.join(SITE_DIR, 'index.html'), 'w', encoding='utf-8') as f:
-        f.write(_PAGE_TEMPLATE)
+def build_index(kpis):
+    html = _PAGE_TEMPLATE
+    for name in SCENARIOS:
+        token = name.replace('_results', '').upper()  # 'S1_results' -> 'S1'
+        k = kpis.get(name, {})
+        html = html.replace(f'__{token}_COST__', _fmt_kpi(k.get('transition_cost')))
+        html = html.replace(f'__{token}_GWP__', _fmt_kpi(k.get('cum_gwp')))
+    path = os.path.join(SITE_DIR, 'index.html')
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(html)
 
 
 def main():
     published = []
+    kpis = {}
     for name in SCENARIOS:
-        if sync_scenario(name):
+        ok, kpi = sync_scenario(name)
+        if ok:
             published.append(name)
-    build_index()
+            kpis[name] = kpi
+    build_index(kpis)
     print(f'\nIndex rebuilt. Scenario(s) synced: {", ".join(published) if published else "(none)"}')
 
 

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scenario Results — EnergyScope-Québec</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 3 14h7l-1 8 11-14h-7z' fill='%23ffd166' stroke='%23101820' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
   @media (prefers-color-scheme: dark) {
     :root {
@@ -89,6 +90,12 @@
     font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
     font-size: 0.7rem; letter-spacing: 0.06em; color: var(--ink-soft);
   }
+  .copylink {
+    margin-left: auto; font: inherit; font-size: 0.7rem; padding: 0.15rem 0.55rem;
+    border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--ink-soft); white-space: nowrap;
+  }
+  .copylink:hover { border-color: var(--accent); color: var(--accent-strong); }
   .desc { color: var(--ink-soft); margin: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
   .chip {
@@ -98,6 +105,8 @@
   }
   .chip.base { border-color: var(--rail-done); color: var(--accent-strong); font-weight: 600; }
   .chip.new { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .kpis { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-size: 0.82rem; color: var(--ink-soft); }
+  .kpis b { color: var(--ink); font-variant-numeric: tabular-nums; }
   .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
   .btn {
     display: inline-flex; align-items: center; gap: 0.4rem;
@@ -118,6 +127,7 @@
   .trunkline .cardtitle { font-size: 1.08rem; margin-bottom: 0.3rem; }
   .trunkline .desc { font-size: 0.92rem; max-width: 52ch; margin-bottom: 0.8rem; }
   .trunkline .chips { margin-bottom: 0.9rem; }
+  .trunkline .kpis { margin-bottom: 0.9rem; }
   .trunkline .btn { font-size: 0.87rem; padding: 0.48rem 0.8rem; }
 
   .marker { position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; margin-bottom: 0.4rem; }
@@ -149,6 +159,7 @@
   .subcard .cardtitle { font-size: 0.96rem; margin-bottom: 0.2rem; }
   .subcard .desc { font-size: 0.85rem; margin-bottom: 0.6rem; }
   .subcard .chips { margin-bottom: 0.75rem; }
+  .subcard .kpis { margin-bottom: 0.75rem; font-size: 0.78rem; }
   .subcard .btn { font-size: 0.8rem; padding: 0.38rem 0.65rem; }
 
   .substep.ghost .subcard { background: var(--ghost-bg); border-style: dashed; border-color: var(--ghost-line); }
@@ -200,6 +211,7 @@
         <span class="chip base">2035 emissions cap</span>
         <span class="chip base">2050 carbon neutrality</span>
       </div>
+      <div class="kpis"><span><b>1,435</b> B$ transition cost</span><span><b>1,271</b> Mt cumul. GWP</span></div>
       <div class="actions">
         <a class="btn primary" href="S1_results/graphs/index.html">Explore the dashboard &rarr;</a>
         <a class="btn ghost" href="S1_results/0_Summary.html">Quick summary</a>
@@ -217,6 +229,7 @@
         <span class="chip">&check; 2050 carbon neutrality</span>
         <span class="chip new">+ Initial stock spreading</span>
       </div>
+      <div class="kpis"><span><b>1,536</b> B$ transition cost</span><span><b>1,246</b> Mt cumul. GWP</span></div>
       <div class="actions">
         <a class="btn primary" href="S2_results/graphs/index.html">Explore the dashboard &rarr;</a>
         <a class="btn ghost" href="S2_results/0_Summary.html">Quick summary</a>
@@ -240,6 +253,7 @@
             <div class="cardhead"><h3 class="cardtitle">Carbon budget</h3></div>
             <p class="desc">Adds a cumulative carbon budget over 2020&ndash;2050.</p>
             <div class="chips"><span class="chip new">+ Carbon budget</span></div>
+            <div class="kpis"><span><b>1,545</b> B$ cost</span><span><b>883</b> Mt cumul. GWP</span></div>
             <div class="actions">
               <a class="btn primary" href="S3_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S3_results/0_Summary.html">Summary</a>
@@ -255,6 +269,7 @@
             <div class="cardhead"><h3 class="cardtitle">Limited change rate</h3></div>
             <p class="desc">Adds a constraint limiting how fast technologies can be deployed from one phase to the next.</p>
             <div class="chips"><span class="chip new">+ Limited change rate</span></div>
+            <div class="kpis"><span><b>1,535</b> B$ cost</span><span><b>1,252</b> Mt cumul. GWP</span></div>
             <div class="actions">
               <a class="btn primary" href="S4_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S4_results/0_Summary.html">Summary</a>
@@ -270,6 +285,7 @@
             <div class="cardhead"><h3 class="cardtitle">Distributed investment</h3></div>
             <p class="desc">Adds a constraint spreading investment over time rather than concentrating it in a single phase.</p>
             <div class="chips"><span class="chip new">+ Distributed investment</span></div>
+            <div class="kpis"><span><b>1,539</b> B$ cost</span><span><b>1,253</b> Mt cumul. GWP</span></div>
             <div class="actions">
               <a class="btn primary" href="S5_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S5_results/0_Summary.html">Summary</a>
@@ -285,6 +301,7 @@
             <div class="cardhead"><h3 class="cardtitle">Carbon capture limit</h3></div>
             <p class="desc">Adds a limit on the available carbon capture (CC) capacity.</p>
             <div class="chips"><span class="chip new">+ Carbon capture limit</span></div>
+            <div class="kpis"><span><b>1,546</b> B$ cost</span><span><b>1,223</b> Mt cumul. GWP</span></div>
             <div class="actions">
               <a class="btn primary" href="S6_results/graphs/index.html">Dashboard &rarr;</a>
               <a class="btn ghost" href="S6_results/0_Summary.html">Summary</a>
@@ -300,6 +317,7 @@
             <div class="cardhead"><h3 class="cardtitle">Public mobility</h3></div>
             <p class="desc">Linearly increases the short-distance (SD) public mobility share from 11.87% in 2025 to 64.6% in 2050, and removes 2064.7 Mpkm/y from public aviation (LD).</p>
             <div class="chips"><span class="chip new">+ Public mobility</span></div>
+            <div class="kpis"><span><b>1,501</b> B$ cost</span><span><b>1,262</b> Mt cumul. GWP</span></div>
             <p class="notmerged">Not included in the S8 combination below &mdash; S8 predates this scenario.</p>
             <div class="actions">
               <a class="btn primary" href="S7_results/graphs/index.html">Dashboard &rarr;</a>
@@ -331,6 +349,7 @@
         <span class="chip all">&check; Distributed investment</span>
         <span class="chip all">&check; Carbon capture limit</span>
       </div>
+      <div class="kpis"><span><b>1,146</b> B$ transition cost</span><span><b>883</b> Mt cumul. GWP</span></div>
       <div class="actions">
         <a class="btn primary" href="S8_results/graphs/index.html">Explore the dashboard &rarr;</a>
         <a class="btn ghost" href="S8_results/0_Summary.html">Quick summary</a>
@@ -344,5 +363,24 @@
   </footer>
 
 </div>
+<script>
+  document.querySelectorAll('[id^="s"]').forEach(function (container) {
+    var head = container.querySelector('.cardhead');
+    if (!head) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copylink';
+    btn.textContent = 'Copy link';
+    btn.title = 'Copy a link to this scenario';
+    btn.onclick = function () {
+      var url = location.origin + location.pathname + '#' + container.id;
+      navigator.clipboard.writeText(url).then(function () {
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy link'; }, 1400);
+      });
+    };
+    head.appendChild(btn);
+  });
+</script>
 </body>
 </html>

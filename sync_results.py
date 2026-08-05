@@ -17,9 +17,8 @@ import shutil
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOURCE_OUT_DIR = os.path.join(SITE_DIR, '..', 'EnergyScope-Quebec', 'projects', 'pathway', 'out')
 
-# Published scenarios. S0 was a preliminary run (not published) and S7 (public
-# mobility) hasn't been re-run with its intended config yet — it's shown as a
-# "coming soon" placeholder directly in the index.html template below instead.
+# Published scenarios. S0 was a preliminary run (not published). S8 (the full
+# combination) predates S7 and does not include its public-mobility constraint.
 SCENARIOS = [
     'S1_results',
     'S2_results',
@@ -27,6 +26,7 @@ SCENARIOS = [
     'S4_results',
     'S5_results',
     'S6_results',
+    'S7_results',
     'S8_results',
 ]
 
@@ -75,11 +75,11 @@ def sync_scenario(name):
 
 # ---------------------------------------------------------------------------
 # Landing page — a single connected spine (git-graph style): S1 -> S2 build a
-# shared baseline, a split marker fans out into four modifications tested in
-# isolation (S3-S6, plus a not-yet-run S7 shown as a dashed placeholder that
-# explicitly does not feed forward), and a merge marker brings the four back
-# together into S8. Content is bespoke (not templated from SCENARIOS) since
-# the narrative structure — which scenario builds on which — is fixed.
+# shared baseline, a split marker fans out into five modifications tested in
+# isolation (S3-S7), and a merge marker brings four of them (S3-S6) back
+# together into S8 — S8 predates S7, so it does not include the public-mobility
+# constraint. Content is bespoke (not templated from SCENARIOS) since the
+# narrative structure — which scenario builds on which — is fixed.
 # ---------------------------------------------------------------------------
 
 _PAGE_TEMPLATE = """<!DOCTYPE html>
@@ -362,13 +362,18 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
         </div>
       </div>
 
-      <div class="substep ghost">
+      <div class="substep">
         <div class="substepgrid">
           <div class="tick"><div class="node subnode">S7</div></div>
           <div class="card subcard">
-            <div class="cardhead"><h3 class="cardtitle">Public mobility</h3><span class="pending">coming soon</span></div>
-            <p class="desc">Planned constraint on public mobility &mdash; not yet simulated, will be published once available.</p>
-            <p class="notmerged">Not included in the S8 combination below.</p>
+            <div class="cardhead"><h3 class="cardtitle">Public mobility</h3></div>
+            <p class="desc">Linearly increases the short-distance (SD) public mobility share from 11.87% in 2025 to 64.6% in 2050, and removes 2064.7 Mpkm/y from public aviation (LD).</p>
+            <div class="chips"><span class="chip new">+ Public mobility</span></div>
+            <p class="notmerged">Not included in the S8 combination below &mdash; S8 predates this scenario.</p>
+            <div class="actions">
+              <a class="btn primary" href="S7_results/graphs/index.html">Dashboard &rarr;</a>
+              <a class="btn ghost" href="S7_results/0_Summary.html">Summary</a>
+            </div>
           </div>
         </div>
       </div>

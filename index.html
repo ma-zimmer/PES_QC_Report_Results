@@ -37,6 +37,7 @@
   }
 
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0; background: var(--page); color: var(--ink);
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -44,6 +45,20 @@
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 3 14h7l-1 8 11-14h-7z' fill='%23ffd166' stroke='%23101820' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E") 2 2, auto;
   }
   .wrap { max-width: 760px; margin: 0 auto; padding: 4.5rem 1.5rem 6rem; }
+
+  /* Deep-link targets: id="s1".."s8" on each scenario's outer container, so
+     the report can link straight to e.g. #s3. scroll-margin-top keeps the
+     card from landing flush against the viewport edge; the :target rule
+     gives a brief highlight so it's obvious which card was linked to. */
+  [id^="s"] { scroll-margin-top: 1.75rem; }
+  [id^="s"]:target .card { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  @media (prefers-reduced-motion: no-preference) {
+    [id^="s"]:target .card { animation: target-flash 2.2s ease-out; }
+    @keyframes target-flash {
+      0% { box-shadow: 0 0 0 4px var(--accent); }
+      100% { box-shadow: 0 0 0 2px var(--accent); }
+    }
+  }
 
   header.hero { margin-bottom: 3rem; }
   .eyebrow {
@@ -176,7 +191,7 @@
     <p class="lede"><b>S1</b> and <b>S2</b> build a common baseline. From there, <b>S3&ndash;S7</b> each test <b>one</b> modification in isolation &mdash; not on top of one another &mdash; and <b>S8</b> combines the four that were tested.</p>
   </header>
 
-  <div class="trunkline">
+  <div class="trunkline" id="s1">
     <div class="railcol"><div class="node">S1</div></div>
     <div class="card">
       <div class="cardhead"><h3 class="cardtitle">Base case</h3><span class="tag">S1_results</span></div>
@@ -192,7 +207,7 @@
     </div>
   </div>
 
-  <div class="trunkline">
+  <div class="trunkline" id="s2">
     <div class="railcol"><div class="node">S2</div></div>
     <div class="card">
       <div class="cardhead"><h3 class="cardtitle">Initial stock spreading</h3><span class="tag">S2_results</span></div>
@@ -218,7 +233,7 @@
     <div class="spinecol"></div>
     <div class="substeps">
 
-      <div class="substep">
+      <div class="substep" id="s3">
         <div class="substepgrid">
           <div class="tick"><div class="node subnode">S3</div></div>
           <div class="card subcard">
@@ -233,7 +248,7 @@
         </div>
       </div>
 
-      <div class="substep">
+      <div class="substep" id="s4">
         <div class="substepgrid">
           <div class="tick"><div class="node subnode">S4</div></div>
           <div class="card subcard">
@@ -248,7 +263,7 @@
         </div>
       </div>
 
-      <div class="substep">
+      <div class="substep" id="s5">
         <div class="substepgrid">
           <div class="tick"><div class="node subnode">S5</div></div>
           <div class="card subcard">
@@ -263,7 +278,7 @@
         </div>
       </div>
 
-      <div class="substep">
+      <div class="substep" id="s6">
         <div class="substepgrid">
           <div class="tick"><div class="node subnode">S6</div></div>
           <div class="card subcard">
@@ -278,7 +293,7 @@
         </div>
       </div>
 
-      <div class="substep">
+      <div class="substep" id="s7">
         <div class="substepgrid">
           <div class="tick"><div class="node subnode">S7</div></div>
           <div class="card subcard">
@@ -302,7 +317,7 @@
     <div class="note">S8 combines the <b>four</b> branches above (carbon budget, change rate, distributed investment, carbon capture) into one scenario.</div>
   </div>
 
-  <div class="trunkline endpoint">
+  <div class="trunkline endpoint" id="s8">
     <div class="railcol"><div class="node">S8</div></div>
     <div class="card">
       <div class="cardhead"><h3 class="cardtitle">Full combination</h3><span class="tag">S8_results</span></div>

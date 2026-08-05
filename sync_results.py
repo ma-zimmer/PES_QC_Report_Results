@@ -13,6 +13,7 @@ import json
 import os
 import re
 import shutil
+from datetime import datetime, timezone
 
 import pandas as pd
 
@@ -515,7 +516,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   </div>
 
   <footer>
-    <span>EnergyScope-Qu&eacute;bec &mdash; Pathway &middot; results generated automatically</span>
+    <span>EnergyScope-Qu&eacute;bec &mdash; Pathway &middot; results generated automatically &middot; last updated __UPDATED__</span>
     <a href="https://github.com/ma-zimmer/PES_QC_Report_Results">github.com/ma-zimmer/PES_QC_Report_Results</a>
   </footer>
 
@@ -551,6 +552,8 @@ def build_index(kpis):
         k = kpis.get(name, {})
         html = html.replace(f'__{token}_COST__', _fmt_kpi(k.get('transition_cost')))
         html = html.replace(f'__{token}_GWP__', _fmt_kpi(k.get('cum_gwp')))
+    updated = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+    html = html.replace('__UPDATED__', updated)
     path = os.path.join(SITE_DIR, 'index.html')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(html)

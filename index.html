@@ -5,165 +5,165 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scenario Results — EnergyScope-Québec</title>
 <style>
-  @media (prefers-color-scheme: dark) {{
-    :root {{
+  @media (prefers-color-scheme: dark) {
+    :root {
       --page: #0f171d; --surface: #16212a; --surface-2: #1c2932;
       --ink: #e8eef1; --ink-soft: #9fb0b8; --line: #2a3944;
       --accent: #6cc3e6; --accent-strong: #9adcf5; --accent-ink: #06222c;
       --rail: #33454f; --rail-done: #4f7d92; --rail-branch: #3a5c6c;
       --ghost-bg: #141d24; --ghost-line: #354652;
-    }}
-  }}
-  :root {{
+    }
+  }
+  :root {
     --page: #eef3f3; --surface: #ffffff; --surface-2: #f4f8f8;
     --ink: #101820; --ink-soft: #52646c; --line: #d7e0e1;
     --accent: #0e6e8c; --accent-strong: #0a4f66; --accent-ink: #ffffff;
     --rail: #c7d4d5; --rail-done: #0e6e8c; --rail-branch: #8fb9c7;
     --ghost-bg: #e7edee; --ghost-line: #b9c8ca;
-  }}
-  :root[data-theme="dark"] {{
+  }
+  :root[data-theme="dark"] {
     --page: #0f171d; --surface: #16212a; --surface-2: #1c2932;
     --ink: #e8eef1; --ink-soft: #9fb0b8; --line: #2a3944;
     --accent: #6cc3e6; --accent-strong: #9adcf5; --accent-ink: #06222c;
     --rail: #33454f; --rail-done: #4f7d92; --rail-branch: #3a5c6c;
     --ghost-bg: #141d24; --ghost-line: #354652;
-  }}
-  :root[data-theme="light"] {{
+  }
+  :root[data-theme="light"] {
     --page: #eef3f3; --surface: #ffffff; --surface-2: #f4f8f8;
     --ink: #101820; --ink-soft: #52646c; --line: #d7e0e1;
     --accent: #0e6e8c; --accent-strong: #0a4f66; --accent-ink: #ffffff;
     --rail: #c7d4d5; --rail-done: #0e6e8c; --rail-branch: #8fb9c7;
     --ghost-bg: #e7edee; --ghost-line: #b9c8ca;
-  }}
+  }
 
-  * {{ box-sizing: border-box; }}
-  body {{
+  * { box-sizing: border-box; }
+  body {
     margin: 0; background: var(--page); color: var(--ink);
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 16px; line-height: 1.5;
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 3 14h7l-1 8 11-14h-7z' fill='%23ffd166' stroke='%23101820' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E") 2 2, auto;
-  }}
-  .wrap {{ max-width: 760px; margin: 0 auto; padding: 4.5rem 1.5rem 6rem; }}
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 4.5rem 1.5rem 6rem; }
 
-  header.hero {{ margin-bottom: 3rem; }}
-  .eyebrow {{
+  header.hero { margin-bottom: 3rem; }
+  .eyebrow {
     font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
     font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
     color: var(--accent); margin: 0 0 0.9rem;
-  }}
-  h1 {{
+  }
+  h1 {
     font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, Cambria, "Times New Roman", serif;
     font-size: clamp(1.9rem, 1.4rem + 1.8vw, 2.7rem);
     line-height: 1.15; font-weight: 600; margin: 0 0 1.1rem;
     text-wrap: balance; color: var(--ink);
-  }}
-  .lede {{ max-width: 62ch; color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 0.6rem; }}
-  .lede + .lede {{ margin-top: 0.9rem; }}
-  .lede b {{ color: var(--ink); font-weight: 600; }}
+  }
+  .lede { max-width: 62ch; color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 0.6rem; }
+  .lede + .lede { margin-top: 0.9rem; }
+  .lede b { color: var(--ink); font-weight: 600; }
 
-  .node {{
+  .node {
     z-index: 1; flex-shrink: 0; border-radius: 999px; background: var(--surface);
     display: flex; align-items: center; justify-content: center;
     font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
     font-weight: 600; color: var(--accent-strong);
-  }}
-  .card {{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }}
-  .cardhead {{ display: flex; align-items: baseline; justify-content: space-between; gap: 0.7rem; flex-wrap: wrap; }}
-  .cardtitle {{ font-weight: 700; margin: 0; color: var(--ink); }}
-  .tag {{
+  }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .cardhead { display: flex; align-items: baseline; justify-content: space-between; gap: 0.7rem; flex-wrap: wrap; }
+  .cardtitle { font-weight: 700; margin: 0; color: var(--ink); }
+  .tag {
     font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
     font-size: 0.7rem; letter-spacing: 0.06em; color: var(--ink-soft);
-  }}
-  .desc {{ color: var(--ink-soft); margin: 0; }}
-  .chips {{ display: flex; flex-wrap: wrap; gap: 0.35rem; }}
-  .chip {{
+  }
+  .desc { color: var(--ink-soft); margin: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .chip {
     font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 999px;
     border: 1px solid var(--line); color: var(--ink-soft); background: var(--surface-2);
     white-space: nowrap;
-  }}
-  .chip.base {{ border-color: var(--rail-done); color: var(--accent-strong); font-weight: 600; }}
-  .chip.new {{ background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }}
-  .actions {{ display: flex; flex-wrap: wrap; gap: 0.55rem; }}
-  .btn {{
+  }
+  .chip.base { border-color: var(--rail-done); color: var(--accent-strong); font-weight: 600; }
+  .chip.new { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+  .btn {
     display: inline-flex; align-items: center; gap: 0.4rem;
     font-weight: 600; text-decoration: none; border-radius: 7px; border: 1px solid transparent;
-  }}
-  .btn.primary {{ background: var(--accent); color: var(--accent-ink); }}
-  .btn.primary:hover {{ background: var(--accent-strong); }}
-  .btn.ghost {{ border-color: var(--line); color: var(--ink); }}
-  .btn.ghost:hover {{ border-color: var(--accent); color: var(--accent-strong); }}
+  }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { background: var(--accent-strong); }
+  .btn.ghost { border-color: var(--line); color: var(--ink); }
+  .btn.ghost:hover { border-color: var(--accent); color: var(--accent-strong); }
 
-  .trunkline {{ position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }}
-  .trunkline .railcol {{ position: relative; display: flex; justify-content: center; }}
-  .trunkline .railcol::before {{
+  .trunkline { position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }
+  .trunkline .railcol { position: relative; display: flex; justify-content: center; }
+  .trunkline .railcol::before {
     content: ""; position: absolute; top: 2.6rem; bottom: -1.6rem; width: 2px; background: var(--rail-done);
-  }}
-  .trunkline .node {{ width: 2.6rem; height: 2.6rem; font-size: 0.82rem; }}
-  .trunkline .card {{ padding: 1.15rem 1.3rem 1.25rem; margin-bottom: 1.6rem; }}
-  .trunkline .cardtitle {{ font-size: 1.08rem; margin-bottom: 0.3rem; }}
-  .trunkline .desc {{ font-size: 0.92rem; max-width: 52ch; margin-bottom: 0.8rem; }}
-  .trunkline .chips {{ margin-bottom: 0.9rem; }}
-  .trunkline .btn {{ font-size: 0.87rem; padding: 0.48rem 0.8rem; }}
+  }
+  .trunkline .node { width: 2.6rem; height: 2.6rem; font-size: 0.82rem; }
+  .trunkline .card { padding: 1.15rem 1.3rem 1.25rem; margin-bottom: 1.6rem; }
+  .trunkline .cardtitle { font-size: 1.08rem; margin-bottom: 0.3rem; }
+  .trunkline .desc { font-size: 0.92rem; max-width: 52ch; margin-bottom: 0.8rem; }
+  .trunkline .chips { margin-bottom: 0.9rem; }
+  .trunkline .btn { font-size: 0.87rem; padding: 0.48rem 0.8rem; }
 
-  .marker {{ position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; margin-bottom: 0.4rem; }}
-  .marker .railcol {{ position: relative; display: flex; justify-content: center; }}
-  .marker .railcol::before {{ content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: var(--rail-done); }}
-  .marker .diamond {{
+  .marker { position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; margin-bottom: 0.4rem; }
+  .marker .railcol { position: relative; display: flex; justify-content: center; }
+  .marker .railcol::before { content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: var(--rail-done); }
+  .marker .diamond {
     z-index: 1; width: 0.7rem; height: 0.7rem; background: var(--surface);
     border: 2px solid var(--rail-done); transform: rotate(45deg); margin-top: 1rem;
-  }}
-  .marker .note {{ align-self: center; font-size: 0.86rem; color: var(--ink-soft); padding-top: 0.5rem; }}
-  .marker .note b {{ color: var(--ink); }}
+  }
+  .marker .note { align-self: center; font-size: 0.86rem; color: var(--ink-soft); padding-top: 0.5rem; }
+  .marker .note b { color: var(--ink); }
 
-  .branchzone {{ display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }}
-  .branchzone .spinecol {{ position: relative; display: flex; justify-content: center; }}
-  .branchzone .spinecol::before {{
+  .branchzone { display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }
+  .branchzone .spinecol { position: relative; display: flex; justify-content: center; }
+  .branchzone .spinecol::before {
     content: ""; position: absolute; top: 0; bottom: 0.9rem; width: 2px;
     background: repeating-linear-gradient(to bottom, var(--rail-branch) 0 5px, transparent 5px 10px);
-  }}
-  .substep {{ position: relative; padding-bottom: 1.15rem; }}
-  .substep:last-child {{ padding-bottom: 0; }}
-  .substepgrid {{ display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }}
-  .tick {{ position: relative; height: 2.4rem; display: flex; align-items: center; justify-content: center; }}
-  .tick::before {{
+  }
+  .substep { position: relative; padding-bottom: 1.15rem; }
+  .substep:last-child { padding-bottom: 0; }
+  .substepgrid { display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }
+  .tick { position: relative; height: 2.4rem; display: flex; align-items: center; justify-content: center; }
+  .tick::before {
     content: ""; position: absolute; left: 50%; top: 50%; width: 1.1rem; height: 2px;
     background: var(--rail-branch); transform: translate(-1.6rem, -50%);
-  }}
-  .subnode {{ width: 2.1rem; height: 2.1rem; font-size: 0.72rem; border: 2px solid var(--rail-branch); color: var(--accent-strong); position: relative; margin-left: 0.5rem; }}
-  .subcard {{ padding: 0.85rem 1rem 0.95rem; }}
-  .subcard .cardtitle {{ font-size: 0.96rem; margin-bottom: 0.2rem; }}
-  .subcard .desc {{ font-size: 0.85rem; margin-bottom: 0.6rem; }}
-  .subcard .chips {{ margin-bottom: 0.75rem; }}
-  .subcard .btn {{ font-size: 0.8rem; padding: 0.38rem 0.65rem; }}
+  }
+  .subnode { width: 2.1rem; height: 2.1rem; font-size: 0.72rem; border: 2px solid var(--rail-branch); color: var(--accent-strong); position: relative; margin-left: 0.5rem; }
+  .subcard { padding: 0.85rem 1rem 0.95rem; }
+  .subcard .cardtitle { font-size: 0.96rem; margin-bottom: 0.2rem; }
+  .subcard .desc { font-size: 0.85rem; margin-bottom: 0.6rem; }
+  .subcard .chips { margin-bottom: 0.75rem; }
+  .subcard .btn { font-size: 0.8rem; padding: 0.38rem 0.65rem; }
 
-  .substep.ghost .subcard {{ background: var(--ghost-bg); border-style: dashed; border-color: var(--ghost-line); }}
-  .substep.ghost .subnode {{ border-style: dashed; border-color: var(--ghost-line); color: var(--ink-soft); }}
-  .substep.ghost .tick::before {{ background: repeating-linear-gradient(to right, var(--ghost-line) 0 3px, transparent 3px 6px); }}
-  .substep.ghost .cardtitle, .substep.ghost .desc {{ color: var(--ink-soft); }}
-  .pending {{
+  .substep.ghost .subcard { background: var(--ghost-bg); border-style: dashed; border-color: var(--ghost-line); }
+  .substep.ghost .subnode { border-style: dashed; border-color: var(--ghost-line); color: var(--ink-soft); }
+  .substep.ghost .tick::before { background: repeating-linear-gradient(to right, var(--ghost-line) 0 3px, transparent 3px 6px); }
+  .substep.ghost .cardtitle, .substep.ghost .desc { color: var(--ink-soft); }
+  .pending {
     font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; color: var(--ink-soft);
     border: 1px dashed var(--ghost-line); border-radius: 999px; padding: 0.2rem 0.5rem; white-space: nowrap;
-  }}
-  .notmerged {{ font-size: 0.76rem; color: var(--ink-soft); font-style: italic; margin-top: 0.5rem; }}
+  }
+  .notmerged { font-size: 0.76rem; color: var(--ink-soft); font-style: italic; margin-top: 0.5rem; }
 
-  .trunkline.endpoint .node {{ background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }}
-  .trunkline.endpoint .card {{ border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; margin-bottom: 0; }}
-  .chip.all {{ background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }}
+  .trunkline.endpoint .node { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .trunkline.endpoint .card { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; margin-bottom: 0; }
+  .chip.all { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
 
-  footer {{
+  footer {
     margin-top: 3.4rem; padding-top: 1.3rem; border-top: 1px solid var(--line);
     color: var(--ink-soft); font-size: 0.85rem; display: flex; justify-content: space-between;
     gap: 1rem; flex-wrap: wrap;
-  }}
-  footer a {{ color: var(--ink-soft); }}
-  footer a:hover {{ color: var(--accent-strong); }}
+  }
+  footer a { color: var(--ink-soft); }
+  footer a:hover { color: var(--accent-strong); }
 
-  @media (max-width: 480px) {{
-    .wrap {{ padding: 3rem 1.1rem 4rem; }}
-    .trunkline, .marker, .branchzone, .substepgrid {{ grid-template-columns: 2.1rem 1fr; column-gap: 0.7rem; }}
-    .trunkline .node {{ width: 2.1rem; height: 2.1rem; font-size: 0.72rem; }}
-    .trunkline .railcol::before {{ top: 2.1rem; }}
-  }}
+  @media (max-width: 480px) {
+    .wrap { padding: 3rem 1.1rem 4rem; }
+    .trunkline, .marker, .branchzone, .substepgrid { grid-template-columns: 2.1rem 1fr; column-gap: 0.7rem; }
+    .trunkline .node { width: 2.1rem; height: 2.1rem; font-size: 0.72rem; }
+    .trunkline .railcol::before { top: 2.1rem; }
+  }
 </style>
 </head>
 <body>

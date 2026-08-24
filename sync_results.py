@@ -13,12 +13,23 @@ import json
 import os
 import re
 import shutil
+import sys
 from datetime import datetime, timezone
 
 import pandas as pd
 
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
-SOURCE_OUT_DIR = os.path.join(SITE_DIR, '..', 'EnergyScope-Quebec', 'projects', 'pathway', 'out')
+SOURCE_REPO_DIR = os.path.join(SITE_DIR, '..', 'EnergyScope-Quebec')
+SOURCE_OUT_DIR = os.path.join(SOURCE_REPO_DIR, 'projects', 'pathway', 'out')
+SOURCE_SRC_DIR = os.path.join(SOURCE_REPO_DIR, 'projects', 'pathway', 'src')
+
+# transition_cost_by_phase_category is the canonical system-cost breakdown
+# (CAPEX net of salvage, hors 2015_2020, + OPEX incl. the standalone
+# YEAR_2020 term) — same convention as the 0b_Transition_cost.html dashboard
+# plot. Deliberately NOT the model's own 'Transition_cost' output, which
+# mixes in the CRF-annuity formulation (C_tot_capex) and reads far higher.
+sys.path.insert(0, SOURCE_SRC_DIR)
+from plot_results import load_results, transition_cost_by_phase_category  # noqa: E402
 
 # Published scenarios. S0 was a preliminary run (not published). S8 (the full
 # combination) now includes all five of S3-S7's modifications, public
@@ -93,16 +104,14 @@ def _extract_kpis(name):
     if not os.path.exists(pkl_path):
         return kpi
     try:
-        results = pd.read_pickle(pkl_path)
+        results = load_results(name)  # applies _drop_excluded_techs, same as every other dashboard/report script
     except Exception as e:
         print(f'  WARN {name}: could not read _Results.pkl for KPIs ({e})')
         return kpi
 
-    tc = results.get('Transition_cost')
-    if tc is not None and not tc.empty:
-        val = pd.to_numeric(tc.iloc[:, 0], errors='coerce').iloc[0]
-        if pd.notna(val):
-            kpi['transition_cost'] = float(val) / 1e3  # M$ -> B$
+    cost = transition_cost_by_phase_category(results)
+    if cost is not None and not cost.empty:
+        kpi['transition_cost'] = float(cost[['CAPEX', 'OPEX']].sum().sum())  # already B$
 
     tg = results.get('TotalGwp')
     if tg is not None and not tg.empty:

@@ -67,11 +67,11 @@ def _restrict_cases(dashboard_path, current_name):
         f.write(new_html)
 
 
-# Same lightning-bolt glyph as the cursor, reused as the browser-tab icon —
-# consistent branding, no extra asset file. Injected right after <head> in the
-# pages a reader lands on directly (the landing page itself, each scenario's
-# dashboard, and its quick-summary chart); the ~230 individual chart pages per
-# scenario are only ever seen inside an iframe, so their tab icon never shows.
+# Lightning-bolt glyph used as the browser-tab icon — consistent branding, no
+# extra asset file. Injected right after <head> in the pages a reader lands on
+# directly (the landing page itself, each scenario's dashboard, and its
+# quick-summary chart); the ~230 individual chart pages per scenario are only
+# ever seen inside an iframe, so their tab icon never shows.
 _FAVICON_LINK = (
     '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' '
     'viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M13 2 3 14h7l-1 8 11-14h-7z\' fill=\'%23ffd166\' '
@@ -160,11 +160,10 @@ def sync_scenario(name):
 
 
 # ---------------------------------------------------------------------------
-# Landing page — a single connected spine (git-graph style): S1 -> S2 build a
-# shared baseline, a split marker fans out into five modifications tested in
-# isolation (S3-S7), and a merge marker brings all five back together into S8.
-# Content is bespoke (not templated from SCENARIOS) since the narrative
-# structure — which scenario builds on which — is fixed.
+# Landing page — one flat, grouped list: S1-S2 (baseline), S3-S7 (one
+# modification at a time, independently), S8 (all five combined). Content is
+# bespoke (not templated from SCENARIOS) since the narrative structure —
+# which scenario builds on which — is fixed.
 # ---------------------------------------------------------------------------
 
 _PAGE_TEMPLATE = """<!DOCTYPE html>
@@ -181,188 +180,88 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
 <meta name="twitter:title" content="Scenario Results — EnergyScope-Québec">
 <meta name="twitter:description" content="Interactive dashboards for the EnergyScope-Québec Pathway transition scenarios (S1-S8), published to accompany the report.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 3 14h7l-1 8 11-14h-7z' fill='%23ffd166' stroke='%23101820' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg: #FAFAF9; --ink: #1C1C1A; --ink-soft: #6B6A64; --ink-faint: #9A998F;
+    --line: #E4E3DE; --accent: #0B6E5B;
+  }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --page: #0f171d; --surface: #16212a; --surface-2: #1c2932;
-      --ink: #e8eef1; --ink-soft: #9fb0b8; --line: #2a3944;
-      --accent: #6cc3e6; --accent-strong: #9adcf5; --accent-ink: #06222c;
-      --rail: #33454f; --rail-done: #4f7d92; --rail-branch: #3a5c6c;
-      --ghost-bg: #141d24; --ghost-line: #354652;
+    :root:not([data-theme="light"]) {
+      --bg: #121210; --ink: #ECEBE6; --ink-soft: #A7A69D; --ink-faint: #75746B;
+      --line: #2A2A25; --accent: #5FCBAC;
     }
   }
-  :root {
-    --page: #eef3f3; --surface: #ffffff; --surface-2: #f4f8f8;
-    --ink: #101820; --ink-soft: #52646c; --line: #d7e0e1;
-    --accent: #0e6e8c; --accent-strong: #0a4f66; --accent-ink: #ffffff;
-    --rail: #c7d4d5; --rail-done: #0e6e8c; --rail-branch: #8fb9c7;
-    --ghost-bg: #e7edee; --ghost-line: #b9c8ca;
-  }
   :root[data-theme="dark"] {
-    --page: #0f171d; --surface: #16212a; --surface-2: #1c2932;
-    --ink: #e8eef1; --ink-soft: #9fb0b8; --line: #2a3944;
-    --accent: #6cc3e6; --accent-strong: #9adcf5; --accent-ink: #06222c;
-    --rail: #33454f; --rail-done: #4f7d92; --rail-branch: #3a5c6c;
-    --ghost-bg: #141d24; --ghost-line: #354652;
-  }
-  :root[data-theme="light"] {
-    --page: #eef3f3; --surface: #ffffff; --surface-2: #f4f8f8;
-    --ink: #101820; --ink-soft: #52646c; --line: #d7e0e1;
-    --accent: #0e6e8c; --accent-strong: #0a4f66; --accent-ink: #ffffff;
-    --rail: #c7d4d5; --rail-done: #0e6e8c; --rail-branch: #8fb9c7;
-    --ghost-bg: #e7edee; --ghost-line: #b9c8ca;
+    --bg: #121210; --ink: #ECEBE6; --ink-soft: #A7A69D; --ink-faint: #75746B;
+    --line: #2A2A25; --accent: #5FCBAC;
   }
 
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
   body {
-    margin: 0; background: var(--page); color: var(--ink);
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-size: 16px; line-height: 1.5;
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 3 14h7l-1 8 11-14h-7z' fill='%23ffd166' stroke='%23101820' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E") 2 2, auto;
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 4.5rem 1.5rem 6rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .num { font-variant-numeric: tabular-nums; }
 
-  /* Deep-link targets: id="s1".."s8" on each scenario's outer container, so
-     the report can link straight to e.g. #s3. scroll-margin-top keeps the
-     card from landing flush against the viewport edge; the :target rule
-     gives a brief highlight so it's obvious which card was linked to. */
-  [id^="s"] { scroll-margin-top: 1.75rem; }
-  [id^="s"]:target .card { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
-  @media (prefers-reduced-motion: no-preference) {
-    [id^="s"]:target .card { animation: target-flash 2.2s ease-out; }
-    @keyframes target-flash {
-      0% { box-shadow: 0 0 0 4px var(--accent); }
-      100% { box-shadow: 0 0 0 2px var(--accent); }
-    }
-  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 5.5rem 1.75rem 6rem; }
 
-  header.hero { margin-bottom: 3rem; }
+  /* Deep-link targets: id="s1".."s8" on each row, so the report can link
+     straight to e.g. #s3. scroll-margin-top keeps the row clear of the
+     viewport edge; the :target rule highlights the linked scenario's name. */
+  [id^="s"] { scroll-margin-top: 2rem; }
+  [id^="s"]:target .name { color: var(--accent); }
+
+  header.hero { margin-bottom: 4.5rem; }
   .eyebrow {
-    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
-    font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--accent); margin: 0 0 0.9rem;
+    font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 1rem; font-weight: 500;
   }
   h1 {
-    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, Cambria, "Times New Roman", serif;
-    font-size: clamp(1.9rem, 1.4rem + 1.8vw, 2.7rem);
-    line-height: 1.15; font-weight: 600; margin: 0 0 1.1rem;
-    text-wrap: balance; color: var(--ink);
+    font-family: "Newsreader", Georgia, serif; font-weight: 500;
+    font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.4rem); line-height: 1.2;
+    margin: 0 0 1.3rem; text-wrap: balance; color: var(--ink);
   }
-  .lede { max-width: 62ch; color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 0.6rem; }
-  .lede + .lede { margin-top: 0.9rem; }
-  .lede b { color: var(--ink); font-weight: 600; }
+  .lede { font-size: 1.02rem; line-height: 1.65; color: var(--ink-soft); margin: 0; max-width: 56ch; }
+  .lede strong { color: var(--ink); font-weight: 600; }
 
-  .node {
-    z-index: 1; flex-shrink: 0; border-radius: 999px; background: var(--surface);
-    display: flex; align-items: center; justify-content: center;
-    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
-    font-weight: 600; color: var(--accent-strong);
+  .grouplabel {
+    font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 500; margin: 3.2rem 0 0.4rem;
   }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-  .cardhead { display: flex; align-items: baseline; justify-content: space-between; gap: 0.7rem; flex-wrap: wrap; }
-  .cardtitle { font-weight: 700; margin: 0; color: var(--ink); }
-  .tag {
-    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
-    font-size: 0.7rem; letter-spacing: 0.06em; color: var(--ink-soft);
-  }
-  .copylink {
-    margin-left: auto; font: inherit; font-size: 0.7rem; padding: 0.15rem 0.55rem;
-    border-radius: 999px; border: 1px solid var(--line); background: transparent;
-    color: var(--ink-soft); white-space: nowrap;
-  }
-  .copylink:hover { border-color: var(--accent); color: var(--accent-strong); }
-  .desc { color: var(--ink-soft); margin: 0; }
-  .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .chip {
-    font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 999px;
-    border: 1px solid var(--line); color: var(--ink-soft); background: var(--surface-2);
-    white-space: nowrap;
-  }
-  .chip.base { border-color: var(--rail-done); color: var(--accent-strong); font-weight: 600; }
-  .chip.new { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
-  .kpis { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-size: 0.82rem; color: var(--ink-soft); }
-  .kpis b { color: var(--ink); font-variant-numeric: tabular-nums; }
-  .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    font-weight: 600; text-decoration: none; border-radius: 7px; border: 1px solid transparent;
-  }
-  .btn.primary { background: var(--accent); color: var(--accent-ink); }
-  .btn.primary:hover { background: var(--accent-strong); }
-  .btn.ghost { border-color: var(--line); color: var(--ink); }
-  .btn.ghost:hover { border-color: var(--accent); color: var(--accent-strong); }
+  .grouplabel:first-of-type { margin-top: 0; }
 
-  .trunkline { position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }
-  .trunkline .railcol { position: relative; display: flex; justify-content: center; }
-  .trunkline .railcol::before {
-    content: ""; position: absolute; top: 2.6rem; bottom: -1.6rem; width: 2px; background: var(--rail-done);
+  .row {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 2rem;
+    padding: 1.4rem 0; border-top: 1px solid var(--line);
   }
-  .trunkline .node { width: 2.6rem; height: 2.6rem; font-size: 0.82rem; }
-  .trunkline .card { padding: 1.15rem 1.3rem 1.25rem; margin-bottom: 1.6rem; }
-  .trunkline .cardtitle { font-size: 1.08rem; margin-bottom: 0.3rem; }
-  .trunkline .desc { font-size: 0.92rem; max-width: 52ch; margin-bottom: 0.8rem; }
-  .trunkline .chips { margin-bottom: 0.9rem; }
-  .trunkline .kpis { margin-bottom: 0.9rem; }
-  .trunkline .btn { font-size: 0.87rem; padding: 0.48rem 0.8rem; }
-
-  .marker { position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; margin-bottom: 0.4rem; }
-  .marker .railcol { position: relative; display: flex; justify-content: center; }
-  .marker .railcol::before { content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: var(--rail-done); }
-  .marker .diamond {
-    z-index: 1; width: 0.7rem; height: 0.7rem; background: var(--surface);
-    border: 2px solid var(--rail-done); transform: rotate(45deg); margin-top: 1rem;
-  }
-  .marker .note { align-self: center; font-size: 0.86rem; color: var(--ink-soft); padding-top: 0.5rem; }
-  .marker .note b { color: var(--ink); }
-
-  .branchzone { display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }
-  .branchzone .spinecol { position: relative; display: flex; justify-content: center; }
-  .branchzone .spinecol::before {
-    content: ""; position: absolute; top: 0; bottom: 0.9rem; width: 2px;
-    background: repeating-linear-gradient(to bottom, var(--rail-branch) 0 5px, transparent 5px 10px);
-  }
-  .substep { position: relative; padding-bottom: 1.15rem; }
-  .substep:last-child { padding-bottom: 0; }
-  .substepgrid { display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 1.1rem; }
-  .tick { position: relative; height: 2.4rem; display: flex; align-items: center; justify-content: center; }
-  .tick::before {
-    content: ""; position: absolute; left: 50%; top: 50%; width: 1.1rem; height: 2px;
-    background: var(--rail-branch); transform: translate(-1.6rem, -50%);
-  }
-  .subnode { width: 2.1rem; height: 2.1rem; font-size: 0.72rem; border: 2px solid var(--rail-branch); color: var(--accent-strong); position: relative; margin-left: 0.5rem; }
-  .subcard { padding: 0.85rem 1rem 0.95rem; }
-  .subcard .cardtitle { font-size: 0.96rem; margin-bottom: 0.2rem; }
-  .subcard .desc { font-size: 0.85rem; margin-bottom: 0.6rem; }
-  .subcard .chips { margin-bottom: 0.75rem; }
-  .subcard .kpis { margin-bottom: 0.75rem; font-size: 0.78rem; }
-  .subcard .btn { font-size: 0.8rem; padding: 0.38rem 0.65rem; }
-
-  .substep.ghost .subcard { background: var(--ghost-bg); border-style: dashed; border-color: var(--ghost-line); }
-  .substep.ghost .subnode { border-style: dashed; border-color: var(--ghost-line); color: var(--ink-soft); }
-  .substep.ghost .tick::before { background: repeating-linear-gradient(to right, var(--ghost-line) 0 3px, transparent 3px 6px); }
-  .substep.ghost .cardtitle, .substep.ghost .desc { color: var(--ink-soft); }
-  .pending {
-    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; color: var(--ink-soft);
-    border: 1px dashed var(--ghost-line); border-radius: 999px; padding: 0.2rem 0.5rem; white-space: nowrap;
-  }
-  .trunkline.endpoint .node { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .trunkline.endpoint .card { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; margin-bottom: 0; }
-  .chip.all { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .row-main { max-width: 38ch; }
+  .row .name { font-size: 1.05rem; font-weight: 600; color: var(--ink); }
+  .row .name .tag { color: var(--ink-faint); font-weight: 400; margin-right: 0.5rem; }
+  .row .desc { color: var(--ink-soft); font-size: 0.92rem; margin: 0.35rem 0 0; line-height: 1.5; }
+  .row-side { flex-shrink: 0; text-align: right; }
+  .row .metrics { color: var(--ink); font-size: 0.9rem; white-space: nowrap; }
+  .row .metrics .unit { color: var(--ink-faint); }
+  .row .links { margin-top: 0.4rem; font-size: 0.85rem; white-space: nowrap; }
+  .row .links a + a { margin-left: 0.9rem; }
 
   footer {
-    margin-top: 3.4rem; padding-top: 1.3rem; border-top: 1px solid var(--line);
-    color: var(--ink-soft); font-size: 0.85rem; display: flex; justify-content: space-between;
-    gap: 1rem; flex-wrap: wrap;
+    margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line);
+    color: var(--ink-faint); font-size: 0.82rem;
+    display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
   }
-  footer a { color: var(--ink-soft); }
-  footer a:hover { color: var(--accent-strong); }
+  footer a { color: var(--ink-faint); }
+  footer a:hover { color: var(--accent); }
 
-  @media (max-width: 480px) {
-    .wrap { padding: 3rem 1.1rem 4rem; }
-    .trunkline, .marker, .branchzone, .substepgrid { grid-template-columns: 2.1rem 1fr; column-gap: 0.7rem; }
-    .trunkline .node { width: 2.1rem; height: 2.1rem; font-size: 0.72rem; }
-    .trunkline .railcol::before { top: 2.1rem; }
+  @media (max-width: 560px) {
+    .wrap { padding: 3.5rem 1.25rem 4rem; }
+    .row { flex-direction: column; gap: 0.6rem; align-items: flex-start; }
+    .row-side { text-align: left; }
   }
 </style>
 </head>
@@ -372,162 +271,100 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   <header class="hero">
     <p class="eyebrow">EnergyScope-Québec &middot; Pathway model</p>
     <h1>Transition scenario results</h1>
-    <p class="lede">This site accompanies the report and gives access to the interactive dashboard for each simulated scenario.</p>
-    <p class="lede"><b>S1</b> and <b>S2</b> build a common baseline. From there, <b>S3&ndash;S7</b> each test <b>one</b> modification in isolation &mdash; not on top of one another &mdash; and <b>S8</b> combines all five that were tested.</p>
+    <p class="lede">This site accompanies the report and gives access to the interactive dashboard for each simulated scenario. <strong>S1</strong> and <strong>S2</strong> build a common baseline; <strong>S3&ndash;S7</strong> each test one modification in isolation; <strong>S8</strong> combines all five.</p>
   </header>
 
-  <div class="trunkline" id="s1">
-    <div class="railcol"><div class="node">S1</div></div>
-    <div class="card">
-      <div class="cardhead"><h3 class="cardtitle">Base case</h3><span class="tag">S1_results</span></div>
+  <p class="grouplabel">Baseline</p>
+
+  <div class="row" id="s1">
+    <div class="row-main">
+      <div class="name"><span class="tag">S1</span>Base case</div>
       <p class="desc">Only the emissions constraints are active: a 2035 emissions cap and carbon neutrality by 2050.</p>
-      <div class="chips">
-        <span class="chip base">2035 emissions cap</span>
-        <span class="chip base">2050 carbon neutrality</span>
-      </div>
-      <div class="kpis"><span><b>__S1_COST__</b> B$ transition cost</span><span><b>__S1_GWP__</b> Mt cumul. GWP</span></div>
-      <div class="actions">
-        <a class="btn primary" href="S1_results/graphs/index.html">Explore the dashboard &rarr;</a>
-        <a class="btn ghost" href="S1_results/0_Summary.html">Quick summary</a>
-      </div>
+    </div>
+    <div class="row-side">
+      <div class="num metrics">__S1_COST__ <span class="unit">B$</span> &middot; __S1_GWP__ <span class="unit">Mt</span></div>
+      <div class="links"><a href="S1_results/graphs/index.html">Dashboard</a><a href="S1_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
 
-  <div class="trunkline" id="s2">
-    <div class="railcol"><div class="node">S2</div></div>
-    <div class="card">
-      <div class="cardhead"><h3 class="cardtitle">Initial stock spreading</h3><span class="tag">S2_results</span></div>
+  <div class="row" id="s2">
+    <div class="row-main">
+      <div class="name"><span class="tag">S2</span>Initial stock spreading</div>
       <p class="desc">Adds a constraint that spreads the replacement of the initial technology stock over time.</p>
-      <div class="chips">
-        <span class="chip">&check; 2035 emissions cap</span>
-        <span class="chip">&check; 2050 carbon neutrality</span>
-        <span class="chip new">+ Initial stock spreading</span>
-      </div>
-      <div class="kpis"><span><b>__S2_COST__</b> B$ transition cost</span><span><b>__S2_GWP__</b> Mt cumul. GWP</span></div>
-      <div class="actions">
-        <a class="btn primary" href="S2_results/graphs/index.html">Explore the dashboard &rarr;</a>
-        <a class="btn ghost" href="S2_results/0_Summary.html">Quick summary</a>
-      </div>
+    </div>
+    <div class="row-side">
+      <div class="num metrics">__S2_COST__ <span class="unit">B$</span> &middot; __S2_GWP__ <span class="unit">Mt</span></div>
+      <div class="links"><a href="S2_results/graphs/index.html">Dashboard</a><a href="S2_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
 
-  <div class="marker">
-    <div class="railcol"><div class="diamond"></div></div>
-    <div class="note">Baseline locked in &mdash; <b>2035 emissions cap &middot; 2050 carbon neutrality &middot; initial stock spreading</b>. Each branch below tests one further modification on top of it, independently:</div>
-  </div>
+  <p class="grouplabel">One change at a time</p>
 
-  <div class="branchzone">
-    <div class="spinecol"></div>
-    <div class="substeps">
-
-      <div class="substep" id="s3">
-        <div class="substepgrid">
-          <div class="tick"><div class="node subnode">S3</div></div>
-          <div class="card subcard">
-            <div class="cardhead"><h3 class="cardtitle">Carbon budget</h3></div>
-            <p class="desc">Adds a cumulative carbon budget over 2020&ndash;2050.</p>
-            <div class="chips"><span class="chip new">+ Carbon budget</span></div>
-            <div class="kpis"><span><b>__S3_COST__</b> B$ cost</span><span><b>__S3_GWP__</b> Mt cumul. GWP</span></div>
-            <div class="actions">
-              <a class="btn primary" href="S3_results/graphs/index.html">Dashboard &rarr;</a>
-              <a class="btn ghost" href="S3_results/0_Summary.html">Summary</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="substep" id="s4">
-        <div class="substepgrid">
-          <div class="tick"><div class="node subnode">S4</div></div>
-          <div class="card subcard">
-            <div class="cardhead"><h3 class="cardtitle">Limited change rate</h3></div>
-            <p class="desc">Adds a constraint limiting how fast technologies can be deployed from one phase to the next.</p>
-            <div class="chips"><span class="chip new">+ Limited change rate</span></div>
-            <div class="kpis"><span><b>__S4_COST__</b> B$ cost</span><span><b>__S4_GWP__</b> Mt cumul. GWP</span></div>
-            <div class="actions">
-              <a class="btn primary" href="S4_results/graphs/index.html">Dashboard &rarr;</a>
-              <a class="btn ghost" href="S4_results/0_Summary.html">Summary</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="substep" id="s5">
-        <div class="substepgrid">
-          <div class="tick"><div class="node subnode">S5</div></div>
-          <div class="card subcard">
-            <div class="cardhead"><h3 class="cardtitle">Distributed investment</h3></div>
-            <p class="desc">Adds a constraint spreading investment over time rather than concentrating it in a single phase.</p>
-            <div class="chips"><span class="chip new">+ Distributed investment</span></div>
-            <div class="kpis"><span><b>__S5_COST__</b> B$ cost</span><span><b>__S5_GWP__</b> Mt cumul. GWP</span></div>
-            <div class="actions">
-              <a class="btn primary" href="S5_results/graphs/index.html">Dashboard &rarr;</a>
-              <a class="btn ghost" href="S5_results/0_Summary.html">Summary</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="substep" id="s6">
-        <div class="substepgrid">
-          <div class="tick"><div class="node subnode">S6</div></div>
-          <div class="card subcard">
-            <div class="cardhead"><h3 class="cardtitle">Carbon capture limit</h3></div>
-            <p class="desc">Adds a limit on the available carbon capture (CC) capacity.</p>
-            <div class="chips"><span class="chip new">+ Carbon capture limit</span></div>
-            <div class="kpis"><span><b>__S6_COST__</b> B$ cost</span><span><b>__S6_GWP__</b> Mt cumul. GWP</span></div>
-            <div class="actions">
-              <a class="btn primary" href="S6_results/graphs/index.html">Dashboard &rarr;</a>
-              <a class="btn ghost" href="S6_results/0_Summary.html">Summary</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="substep" id="s7">
-        <div class="substepgrid">
-          <div class="tick"><div class="node subnode">S7</div></div>
-          <div class="card subcard">
-            <div class="cardhead"><h3 class="cardtitle">Public mobility</h3></div>
-            <p class="desc">Linearly increases the short-distance (SD) public mobility share from 11.87% in 2025 to 64.6% in 2050, and removes 2064.7 Mpkm/y from public aviation (LD).</p>
-            <div class="chips"><span class="chip new">+ Public mobility</span></div>
-            <div class="kpis"><span><b>__S7_COST__</b> B$ cost</span><span><b>__S7_GWP__</b> Mt cumul. GWP</span></div>
-            <div class="actions">
-              <a class="btn primary" href="S7_results/graphs/index.html">Dashboard &rarr;</a>
-              <a class="btn ghost" href="S7_results/0_Summary.html">Summary</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
+  <div class="row" id="s3">
+    <div class="row-main">
+      <div class="name"><span class="tag">S3</span>Carbon budget</div>
+      <p class="desc">Adds a cumulative carbon budget over 2020&ndash;2050.</p>
+    </div>
+    <div class="row-side">
+      <div class="num metrics">__S3_COST__ <span class="unit">B$</span> &middot; __S3_GWP__ <span class="unit">Mt</span></div>
+      <div class="links"><a href="S3_results/graphs/index.html">Dashboard</a><a href="S3_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
 
-  <div class="marker">
-    <div class="railcol"><div class="diamond"></div></div>
-    <div class="note">S8 combines all <b>five</b> branches above (carbon budget, change rate, distributed investment, carbon capture, public mobility) into one scenario.</div>
+  <div class="row" id="s4">
+    <div class="row-main">
+      <div class="name"><span class="tag">S4</span>Limited change rate</div>
+      <p class="desc">Adds a constraint limiting how fast technologies can be deployed from one phase to the next.</p>
+    </div>
+    <div class="row-side">
+      <div class="num metrics">__S4_COST__ <span class="unit">B$</span> &middot; __S4_GWP__ <span class="unit">Mt</span></div>
+      <div class="links"><a href="S4_results/graphs/index.html">Dashboard</a><a href="S4_results/0_Summary.html">Summary</a></div>
+    </div>
   </div>
 
-  <div class="trunkline endpoint" id="s8">
-    <div class="railcol"><div class="node">S8</div></div>
-    <div class="card">
-      <div class="cardhead"><h3 class="cardtitle">Full combination</h3><span class="tag">S8_results</span></div>
+  <div class="row" id="s5">
+    <div class="row-main">
+      <div class="name"><span class="tag">S5</span>Distributed investment</div>
+      <p class="desc">Adds a constraint spreading investment over time rather than concentrating it in a single phase.</p>
+    </div>
+    <div class="row-side">
+      <div class="num metrics">__S5_COST__ <span class="unit">B$</span> &middot; __S5_GWP__ <span class="unit">Mt</span></div>
+      <div class="links"><a href="S5_results/graphs/index.html">Dashboard</a><a href="S5_results/0_Summary.html">Summary</a></div>
+    </div>
+  </div>
+
+  <div class="row" id="s6">
+    <div class="row-main">
+      <div class="name"><span class="tag">S6</span>Carbon capture limit</div>
+      <p class="desc">Adds a limit on the available carbon capture (CC) capacity.</p>
+    </div>
+    <div class="row-side">
+      <div class="num metrics">__S6_COST__ <span class="unit">B$</span> &middot; __S6_GWP__ <span class="unit">Mt</span></div>
+      <div class="links"><a href="S6_results/graphs/index.html">Dashboard</a><a href="S6_results/0_Summary.html">Summary</a></div>
+    </div>
+  </div>
+
+  <div class="row" id="s7">
+    <div class="row-main">
+      <div class="name"><span class="tag">S7</span>Public mobility</div>
+      <p class="desc">Linearly increases the short-distance (SD) public mobility share from 11.87% in 2025 to 64.6% in 2050, and removes 2064.7 Mpkm/y from public aviation (LD).</p>
+    </div>
+    <div class="row-side">
+      <div class="num metrics">__S7_COST__ <span class="unit">B$</span> &middot; __S7_GWP__ <span class="unit">Mt</span></div>
+      <div class="links"><a href="S7_results/graphs/index.html">Dashboard</a><a href="S7_results/0_Summary.html">Summary</a></div>
+    </div>
+  </div>
+
+  <p class="grouplabel">Combined</p>
+
+  <div class="row" id="s8">
+    <div class="row-main">
+      <div class="name"><span class="tag">S8</span>Full combination</div>
       <p class="desc">S1 + S2 baseline, with the five modifications from S3 to S7 applied together in a single scenario.</p>
-      <div class="chips">
-        <span class="chip base">&check; 2035 emissions cap</span>
-        <span class="chip base">&check; 2050 carbon neutrality</span>
-        <span class="chip base">&check; Initial stock spreading</span>
-        <span class="chip all">&check; Carbon budget</span>
-        <span class="chip all">&check; Limited change rate</span>
-        <span class="chip all">&check; Distributed investment</span>
-        <span class="chip all">&check; Carbon capture limit</span>
-        <span class="chip all">&check; Public mobility</span>
-      </div>
-      <div class="kpis"><span><b>__S8_COST__</b> B$ transition cost</span><span><b>__S8_GWP__</b> Mt cumul. GWP</span></div>
-      <div class="actions">
-        <a class="btn primary" href="S8_results/graphs/index.html">Explore the dashboard &rarr;</a>
-        <a class="btn ghost" href="S8_results/0_Summary.html">Quick summary</a>
-      </div>
+    </div>
+    <div class="row-side">
+      <div class="num metrics">__S8_COST__ <span class="unit">B$</span> &middot; __S8_GWP__ <span class="unit">Mt</span></div>
+      <div class="links"><a href="S8_results/graphs/index.html">Dashboard</a><a href="S8_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
 
@@ -537,25 +374,6 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   </footer>
 
 </div>
-<script>
-  document.querySelectorAll('[id^="s"]').forEach(function (container) {
-    var head = container.querySelector('.cardhead');
-    if (!head) return;
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'copylink';
-    btn.textContent = 'Copy link';
-    btn.title = 'Copy a link to this scenario';
-    btn.onclick = function () {
-      var url = location.origin + location.pathname + '#' + container.id;
-      navigator.clipboard.writeText(url).then(function () {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy link'; }, 1400);
-      });
-    };
-    head.appendChild(btn);
-  });
-</script>
 </body>
 </html>
 """

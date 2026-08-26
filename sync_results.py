@@ -111,7 +111,7 @@ def _extract_kpis(name):
 
     cost = transition_cost_by_phase_category(results)
     if cost is not None and not cost.empty:
-        kpi['transition_cost'] = float(cost[['CAPEX', 'OPEX']].sum().sum())  # already B$
+        kpi['transition_cost'] = float(cost[['CAPEX', 'OPEX']].sum().sum())  # already B CAD
 
     tg = results.get('TotalGwp')
     if tg is not None and not tg.empty:
@@ -282,7 +282,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="desc">Only the emissions constraints are active: a 2035 emissions cap and carbon neutrality by 2050.</p>
     </div>
     <div class="row-side">
-      <div class="num metrics">__S1_COST__ <span class="unit">B$</span> &middot; __S1_GWP__ <span class="unit">Mt</span></div>
+      <div class="num metrics">__S1_COST__ <span class="unit">B CAD</span> &middot; __S1_GWP__ <span class="unit">Mt</span></div>
       <div class="links"><a href="S1_results/graphs/index.html">Dashboard</a><a href="S1_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
@@ -293,7 +293,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="desc">Adds a constraint that spreads the replacement of the initial technology stock over time.</p>
     </div>
     <div class="row-side">
-      <div class="num metrics">__S2_COST__ <span class="unit">B$</span> &middot; __S2_GWP__ <span class="unit">Mt</span></div>
+      <div class="num metrics">__S2_COST__ <span class="unit">B CAD</span> &middot; __S2_GWP__ <span class="unit">Mt</span></div>
       <div class="links"><a href="S2_results/graphs/index.html">Dashboard</a><a href="S2_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
@@ -306,7 +306,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="desc">Adds a cumulative carbon budget over 2020&ndash;2050.</p>
     </div>
     <div class="row-side">
-      <div class="num metrics">__S3_COST__ <span class="unit">B$</span> &middot; __S3_GWP__ <span class="unit">Mt</span></div>
+      <div class="num metrics">__S3_COST__ <span class="unit">B CAD</span> &middot; __S3_GWP__ <span class="unit">Mt</span></div>
       <div class="links"><a href="S3_results/graphs/index.html">Dashboard</a><a href="S3_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
@@ -317,7 +317,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="desc">Adds a constraint limiting how fast technologies can be deployed from one phase to the next.</p>
     </div>
     <div class="row-side">
-      <div class="num metrics">__S4_COST__ <span class="unit">B$</span> &middot; __S4_GWP__ <span class="unit">Mt</span></div>
+      <div class="num metrics">__S4_COST__ <span class="unit">B CAD</span> &middot; __S4_GWP__ <span class="unit">Mt</span></div>
       <div class="links"><a href="S4_results/graphs/index.html">Dashboard</a><a href="S4_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
@@ -328,7 +328,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="desc">Adds a constraint spreading investment over time rather than concentrating it in a single phase.</p>
     </div>
     <div class="row-side">
-      <div class="num metrics">__S5_COST__ <span class="unit">B$</span> &middot; __S5_GWP__ <span class="unit">Mt</span></div>
+      <div class="num metrics">__S5_COST__ <span class="unit">B CAD</span> &middot; __S5_GWP__ <span class="unit">Mt</span></div>
       <div class="links"><a href="S5_results/graphs/index.html">Dashboard</a><a href="S5_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
@@ -339,7 +339,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="desc">Adds a limit on the available carbon capture (CC) capacity.</p>
     </div>
     <div class="row-side">
-      <div class="num metrics">__S6_COST__ <span class="unit">B$</span> &middot; __S6_GWP__ <span class="unit">Mt</span></div>
+      <div class="num metrics">__S6_COST__ <span class="unit">B CAD</span> &middot; __S6_GWP__ <span class="unit">Mt</span></div>
       <div class="links"><a href="S6_results/graphs/index.html">Dashboard</a><a href="S6_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
@@ -350,7 +350,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="desc">Linearly increases the short-distance (SD) public mobility share from 11.87% in 2025 to 64.6% in 2050, and removes 2064.7 Mpkm/y from public aviation (LD).</p>
     </div>
     <div class="row-side">
-      <div class="num metrics">__S7_COST__ <span class="unit">B$</span> &middot; __S7_GWP__ <span class="unit">Mt</span></div>
+      <div class="num metrics">__S7_COST__ <span class="unit">B CAD</span> &middot; __S7_GWP__ <span class="unit">Mt</span></div>
       <div class="links"><a href="S7_results/graphs/index.html">Dashboard</a><a href="S7_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
@@ -363,7 +363,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="desc">S1 + S2 baseline, with the five modifications from S3 to S7 applied together in a single scenario.</p>
     </div>
     <div class="row-side">
-      <div class="num metrics">__S8_COST__ <span class="unit">B$</span> &middot; __S8_GWP__ <span class="unit">Mt</span></div>
+      <div class="num metrics">__S8_COST__ <span class="unit">B CAD</span> &middot; __S8_GWP__ <span class="unit">Mt</span></div>
       <div class="links"><a href="S8_results/graphs/index.html">Dashboard</a><a href="S8_results/0_Summary.html">Summary</a></div>
     </div>
   </div>
